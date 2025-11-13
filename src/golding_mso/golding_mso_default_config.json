@@ -1,0 +1,82 @@
+{
+    "general": {
+        "logging_level": "ERROR"
+    },
+    "initialization": {
+        "filopodia_maximum_length": 15,
+        "filopodia_maximum_diameter": 0.5,
+        "compartment_size": 2,
+        "stabilization_time": 100,
+        "cm": 0.9,
+        "Ra": 200,
+        "internode_cm": 0.0111
+    },
+    "channels": {
+        "klt": {
+            "mechanism": "mathews_klt",
+            "cond_label": "gbar",
+            "ion": "k",
+            "reversal_potential": -90
+        },
+        "kht": {
+            "mechanism": "nabel_kht",
+            "cond_label": "gbar",
+            "ion": "k",
+            "reversal_potential": -90
+        },
+        "hcn": {
+            "mechanism": "khurana_hcn",
+            "cond_label": "gbar",
+            "ion": "h",
+            "reversal_potential": -35
+        },
+        "na": {
+            "mechanism": "scott_na",
+            "cond_label": "gbar",
+            "ion": "na",
+            "reversal_potential": 69
+        },
+        "leak": {
+            "mechanism": "leak",
+            "ion": null,
+            "cond_label": "gbar",
+            "reversal_potential": -70
+        }
+    },
+    "conductances": {
+        "dendrite": {
+            "hcn": 0.001,
+            "kht": 0.00055,
+            "klt": 0.02,
+            "leak": 0.00005,
+            "na": 0
+        },
+        "soma": {
+            "hcn": 0.001,
+            "kht": 0.00055,
+            "klt": 0.04,
+            "leak": 0.00005,
+            "na": 0.03
+        },
+        "tais": {
+            "hcn": 0.002,
+            "klt": 0.155,
+            "leak": 0.00005,
+            "na": 0.25
+        },
+        "cais": {
+            "hcn": 0.002,
+            "klt": 0.155,
+            "leak": 0.00005,
+            "na": 0.25
+        },
+        "internode": {
+            "leak": 0.00002
+        },
+        "node": {
+            "klt": 0.155,
+            "leak": 0.005,
+            "na": 0.25
+        }
+    }
+}
