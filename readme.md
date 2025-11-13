@@ -44,7 +44,7 @@ pip install .
 ```
 
 ## Resources
-
+- [Documentation](https://golding-mso.readthedocs.io/en/latest/)
 - [Golding Lab Website](https://goldinglab.org)
 - [NEURON Documentation](https://www.neuron.yale.edu/neuron/)
 - [GitHub Repository](https://github.com/golding-lab/golding_mso)
