@@ -3,7 +3,7 @@
 </div>
 
 
-# <p align=center> Golding Lab's MSO NEURON package <br> <br> <img alt="Static Badge" src="https://img.shields.io/badge/readthedocs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&link=https%3A%2F%2Fgolding-mso.readthedocs.io%2Fen%2Flatest%2F"> </p> 
+# <p align=center> Golding Lab's MSO NEURON package <br> <br> <a href="https://golding-mso.readthedocs.io/en/latest/"> <img alt="Static Badge" src="https://img.shields.io/badge/readthedocs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&link=https%3A%2F%2Fgolding-mso.readthedocs.io%2Fen%2Flatest%2F"> </a> </p> 
 
 
 <p align=center>
