@@ -178,9 +178,7 @@ def get_package_path() -> pathlib.Path:
     str:
         The path to the golding_mso package directory.
     """
-    with files("golding_mso") as pkg_path:
-        return pkg_path
-
+    return files("golding_mso")
 
 def load_dll(dll_path: str = ""):
     """
