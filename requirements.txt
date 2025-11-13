@@ -1,0 +1,6 @@
+dill
+numpy
+scipy
+pandas
+neuron
+sphinx-rtd-theme

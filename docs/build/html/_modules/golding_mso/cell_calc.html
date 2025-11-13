@@ -1,0 +1,718 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>golding_mso.cell_calc &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">golding_mso.cell_calc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for golding_mso.cell_calc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides functions for compartmental modeling and analysis of NEURON cell morphologies, including path length, surface area, and tip detection utilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">neuron</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">neuron</span> <span class="kn">import</span> <span class="n">h</span>
+<span class="kn">from</span> <span class="nn">.math_calc</span> <span class="kn">import</span> <span class="n">distance3D</span><span class="p">,</span> <span class="n">dist_from_line</span><span class="p">,</span> <span class="n">define_xy_line</span>
+<span class="kn">from</span> <span class="nn">.nrn_types</span> <span class="kn">import</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">Exp2Syn</span><span class="p">,</span> <span class="n">NetCon</span><span class="p">,</span> <span class="n">NetStim</span>
+<span class="kn">from</span> <span class="nn">.cell</span> <span class="kn">import</span> <span class="n">Cell</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="n">h</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s2">&quot;stdrun.hoc&quot;</span><span class="p">)</span>
+<span class="n">h</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s2">&quot;import3d.hoc&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="tiplist">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.tiplist">[docs]</a>
+<span class="k">def</span> <span class="nf">tiplist</span><span class="p">(</span><span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Identifies all terminal sections in a given list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section_list : list</span>
+<span class="sd">        List of NEURON sections to analyze.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    end_sections : list</span>
+<span class="sd">        List of terminal sections (sections with no children).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">section_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">section_list</span><span class="p">)</span>
+    <span class="n">end_sections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+        <span class="n">section_ref</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">SectionRef</span><span class="p">(</span><span class="n">sec</span><span class="o">=</span><span class="n">sec</span><span class="p">)</span>
+        <span class="c1"># subtree = 1 -&gt; no children</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">subtree</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">end_sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># check for non-absolute end sections (like omitting filopodia)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">child</span> <span class="ow">in</span> <span class="n">section_list</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">section_ref</span><span class="o">.</span><span class="n">child</span><span class="p">):</span>
+                <span class="n">end_sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">end_sections</span></div>
+
+
+
+<div class="viewcode-block" id="parentlist">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.parentlist">[docs]</a>
+<span class="k">def</span> <span class="nf">parentlist</span><span class="p">(</span>
+    <span class="n">section</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span>
+    <span class="n">starts_from_soma</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">include_soma</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">include_section</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves all parent sections of a given section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section : h.Section</span>
+<span class="sd">        The NEURON section to analyze.</span>
+<span class="sd">    starts_from_soma : bool, optional</span>
+<span class="sd">        If True, the list starts from the soma. Default is True.</span>
+<span class="sd">    include_soma : bool, optional</span>
+<span class="sd">        If True, includes the soma in the list. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    parent_list : SectionList</span>
+<span class="sd">        List of parent sections, including the original section.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parent_list</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">SectionList</span><span class="p">()</span>
+    <span class="n">sectionref</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">SectionRef</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="n">sectionref</span><span class="o">.</span><span class="n">has_parent</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">first</span> <span class="ow">and</span> <span class="n">include_section</span><span class="p">:</span>
+            <span class="n">parent_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sectionref</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">parent_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sectionref</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+        <span class="n">sectionref</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">SectionRef</span><span class="p">(</span><span class="n">sectionref</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">include_soma</span><span class="p">:</span>
+        <span class="n">parent_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sectionref</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">starts_from_soma</span><span class="p">:</span>
+        <span class="c1"># Reverse to start from soma</span>
+        <span class="n">reversed_list</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">SectionList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">parent_list</span><span class="p">)):</span>
+            <span class="n">reversed_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+        <span class="n">parent_list</span> <span class="o">=</span> <span class="n">reversed_list</span>
+    <span class="k">return</span> <span class="n">parent_list</span></div>
+
+
+
+<div class="viewcode-block" id="section_list_length">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.section_list_length">[docs]</a>
+<span class="k">def</span> <span class="nf">section_list_length</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">return_array</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total and individual lengths of sections in a list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance to check for somatic sections.</span>
+<span class="sd">    section_list : SectionList</span>
+<span class="sd">        List of NEURON sections to analyze.</span>
+<span class="sd">    return_array : bool, optional</span>
+<span class="sd">        If True, returns an array of individual section lengths. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    total_length : float</span>
+<span class="sd">        Total length of all sections in the list.</span>
+<span class="sd">    length_array : list, optional</span>
+<span class="sd">        Array of individual section lengths (if `return_array` is True).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">total_length</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">length_array</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+
+        <span class="c1"># halves length to measure from soma center</span>
+        <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">:</span>
+            <span class="n">total_length</span> <span class="o">+=</span> <span class="n">sec</span><span class="o">.</span><span class="n">L</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">length_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">L</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_length</span> <span class="o">+=</span> <span class="n">sec</span><span class="o">.</span><span class="n">L</span>
+            <span class="n">length_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">total_length</span><span class="p">,</span> <span class="n">length_array</span>
+
+    <span class="k">return</span> <span class="n">total_length</span></div>
+
+
+
+<div class="viewcode-block" id="furthest_point">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.furthest_point">[docs]</a>
+<span class="k">def</span> <span class="nf">furthest_point</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Segment</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the furthest segment and its distance from the soma.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance to find the somatic compartment.</span>
+<span class="sd">    section_list : SectionList</span>
+<span class="sd">        List of NEURON sections to analyze.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    furthest_distance : float</span>
+<span class="sd">        Distance of the furthest segment from the soma.</span>
+<span class="sd">    furthest_seg : Segment</span>
+<span class="sd">        The furthest segment object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">furthest_seg</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">furthest_distance</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+            <span class="n">seg_distance</span> <span class="o">=</span> <span class="n">distance3D</span><span class="p">(</span><span class="n">getsegxyz</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)),</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">seg</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">seg_distance</span> <span class="o">&gt;</span> <span class="n">furthest_distance</span><span class="p">:</span>
+                <span class="n">furthest_distance</span> <span class="o">=</span> <span class="n">seg_distance</span>
+                <span class="n">furthest_seg</span> <span class="o">=</span> <span class="n">seg</span>
+    <span class="k">return</span> <span class="n">furthest_distance</span><span class="p">,</span> <span class="n">furthest_seg</span></div>
+
+
+
+<div class="viewcode-block" id="surface_area">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.surface_area">[docs]</a>
+<span class="k">def</span> <span class="nf">surface_area</span><span class="p">(</span><span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total surface area of all sections in a list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section_list : SectionList</span>
+<span class="sd">        List of NEURON sections to analyze.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    area : float</span>
+<span class="sd">        Total surface area of all sections.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+            <span class="n">area</span> <span class="o">+=</span> <span class="n">seg</span><span class="o">.</span><span class="n">area</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">area</span></div>
+
+
+
+<div class="viewcode-block" id="getsegxyz">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.getsegxyz">[docs]</a>
+<span class="k">def</span> <span class="nf">getsegxyz</span><span class="p">(</span><span class="n">seg</span><span class="p">:</span> <span class="n">Segment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves the 3D coordinates of a NEURON segment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seg : Segment</span>
+<span class="sd">        The NEURON segment to analyze.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    coords : tuple</span>
+<span class="sd">        3D coordinates of the segment (x, y, z).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">seg_location</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">x</span>  <span class="c1"># 0-1 val</span>
+
+    <span class="n">section</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">sec</span>
+    <span class="n">xyz_num</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">n3d</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">xyz_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Section has no 3D points. Ensure the section is properly initialized.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">xyz_point</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xyz_num</span> <span class="o">*</span> <span class="n">seg_location</span><span class="p">)</span>  <span class="c1"># finding nearest x,y,z measurement to seg</span>
+
+    <span class="k">if</span> <span class="n">xyz_point</span> <span class="o">==</span> <span class="n">xyz_num</span><span class="p">:</span>
+        <span class="n">xyz_point</span> <span class="o">=</span> <span class="n">xyz_num</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">x3d</span><span class="p">(</span><span class="n">xyz_point</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">y3d</span><span class="p">(</span><span class="n">xyz_point</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">z3d</span><span class="p">(</span><span class="n">xyz_point</span><span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coords</span></div>
+
+
+
+<div class="viewcode-block" id="closest_tip">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.closest_tip">[docs]</a>
+<span class="k">def</span> <span class="nf">closest_tip</span><span class="p">(</span>
+    <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">seg</span><span class="p">:</span> <span class="n">Segment</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Segment</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the closest tip section&#39;s terminal segment to a given segment in a section list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">endsecs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tiplist</span><span class="p">(</span><span class="n">section_list</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">endsecs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No terminal sections found in the provided section list.&quot;</span><span class="p">)</span>
+    <span class="n">closest_endsec</span> <span class="o">=</span> <span class="n">endsecs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">closest_endsec_dist</span> <span class="o">=</span> <span class="n">distance3D</span><span class="p">(</span>
+            <span class="n">getsegxyz</span><span class="p">(</span><span class="n">seg</span><span class="p">),</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">closest_endsec</span><span class="p">(</span><span class="mf">0.999999</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">closest_endsec_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">endsec</span> <span class="ow">in</span> <span class="n">endsecs</span><span class="p">:</span>
+        <span class="n">path_secs</span> <span class="o">=</span> <span class="n">parentlist</span><span class="p">(</span><span class="n">endsec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">sec</span> <span class="ow">in</span> <span class="n">path_secs</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">endsec_dist</span> <span class="o">=</span> <span class="n">distance3D</span><span class="p">(</span><span class="n">getsegxyz</span><span class="p">(</span><span class="n">seg</span><span class="p">),</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">endsec</span><span class="p">(</span><span class="mf">0.999999</span><span class="p">)))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">endsec_dist</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">endsec_dist</span> <span class="o">&lt;</span> <span class="n">closest_endsec_dist</span><span class="p">:</span>
+                <span class="n">closest_endsec</span> <span class="o">=</span> <span class="n">endsec</span>
+                <span class="n">closest_endsec_dist</span> <span class="o">=</span> <span class="n">endsec_dist</span>
+    <span class="k">return</span> <span class="n">closest_endsec_dist</span><span class="p">,</span> <span class="n">closest_endsec</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_children_secs">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.get_children_secs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_children_secs</span><span class="p">(</span>
+    <span class="n">sec</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of all child sections in the cell (recursively).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">children</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+    <span class="n">all_children</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">children</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+        <span class="n">all_children</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_children_secs</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">section_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">all_children</span> <span class="o">=</span> <span class="p">[</span><span class="n">child</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">all_children</span> <span class="k">if</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">all_children</span></div>
+
+
+
+<div class="viewcode-block" id="average_path_length">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.average_path_length">[docs]</a>
+<span class="k">def</span> <span class="nf">average_path_length</span><span class="p">(</span><span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the average pathlength from all paths to the soma in the section list</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section_list: SectionList</span>
+<span class="sd">        list of sections to find paths to the soma within</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    average_path_length : float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_path_length</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_path_length</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">end_secs</span> <span class="o">=</span> <span class="n">tiplist</span><span class="p">(</span><span class="n">section_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">end_secs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">parentlist</span><span class="p">(</span><span class="n">sec</span><span class="p">):</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">L</span>
+            <span class="n">total_path_length</span> <span class="o">+=</span> <span class="n">length</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_secs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No terminal sections found in the provided section list. Cannot compute average path length.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">average_path_length</span> <span class="o">=</span> <span class="n">total_path_length</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">end_secs</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">average_path_length</span></div>
+
+
+
+<div class="viewcode-block" id="mep">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.mep">[docs]</a>
+<span class="k">def</span> <span class="nf">mep</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the mean electrotonic pathlength (MEP).</span>
+<span class="sd">    Uses paths to soma from each section in section_list.</span>
+
+<span class="sd">    MEP calculation based on (van Elburg and van Ooyen, 2010).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell: Cell</span>
+<span class="sd">        cell instance to pass along to pj()</span>
+<span class="sd">    section_list: SectionList</span>
+<span class="sd">        sections considered as &#39;endpoints&#39; of a pathlength</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mep : float</span>
+<span class="sd">        calculated MEP value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sections</span> <span class="o">=</span> <span class="n">section_list</span>
+    <span class="n">pjarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sections</span><span class="p">)))</span>
+    <span class="n">section_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">pj</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns sum of electrotonic pathlengths. Used for MEP calculation.</span>
+<span class="sd">        MEP calculation based on (van Elburg and van Ooyen, 2010).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cell : Cell</span>
+<span class="sd">            instance of a Cell to pull membrane resistance from</span>
+<span class="sd">        section_list: SectionList</span>
+<span class="sd">            list of sections to calculate electrotonic pathlength</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pj : float</span>
+<span class="sd">            sum of electrotonic pathlengths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># array to store electrotonic pathlengths</span>
+        <span class="n">electrolength_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">section_list</span><span class="p">)))</span>
+        <span class="n">sectionCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+
+            <span class="n">rm</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">membrane_resistance</span>  <span class="c1"># cm^2 * Ω</span>
+            <span class="n">bi</span> <span class="o">=</span> <span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">diam</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000</span>  <span class="c1"># cm</span>
+            <span class="n">numerator</span> <span class="o">=</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">rm</span>  <span class="c1"># cm^3 * Ω</span>
+            <span class="n">denominator</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sec</span><span class="o">.</span><span class="n">Ra</span>  <span class="c1"># Ω * cm</span>
+            <span class="n">tosqrt</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>  <span class="c1"># cm^2</span>
+            <span class="n">length_const</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tosqrt</span><span class="p">)</span>  <span class="c1"># cm</span>
+
+            <span class="n">length</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">L</span> <span class="o">/</span> <span class="mi">10000</span>  <span class="c1"># cm</span>
+            <span class="n">electrolength</span> <span class="o">=</span> <span class="n">length</span> <span class="o">/</span> <span class="n">length_const</span>
+
+            <span class="n">electrolength_array</span><span class="p">[</span><span class="n">sectionCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">electrolength</span>
+            <span class="n">sectionCount</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">pj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">electrolength_array</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pj</span>
+
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+
+        <span class="n">sec_parentlist</span> <span class="o">=</span> <span class="n">parentlist</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+        <span class="n">pjarray</span><span class="p">[</span><span class="n">section_count</span><span class="p">]</span> <span class="o">=</span> <span class="n">pj</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">sec_parentlist</span><span class="p">)</span>
+        <span class="n">section_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">mep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pjarray</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pjarray</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mep</span></div>
+
+
+
+<div class="viewcode-block" id="axon_length_to_terminal">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.axon_length_to_terminal">[docs]</a>
+<span class="k">def</span> <span class="nf">axon_length_to_terminal</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">seg</span><span class="p">:</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;plane&quot;</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the length of the axon to the terminal segment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance containing the sections.</span>
+<span class="sd">    seg : Segment</span>
+<span class="sd">        The segment object for which to calculate the axon length to the terminal.</span>
+<span class="sd">    sectionlist : SectionList</span>
+<span class="sd">        List of NEURON sections to analyze.</span>
+<span class="sd">    method : str, optional</span>
+<span class="sd">        The method to use for calculation. Options are &#39;plane&#39;, &#39;cartesian&#39;, or &#39;straight&#39;. Default is &#39;plane&#39;.</span>
+<span class="sd">        plane: Uses a defined distal perpendicular plane based on cell orientation and furthest segment.</span>
+<span class="sd">        cartesian: Calculates the distance in Cartesian coordinates, assuming axon travels along one axis at a time.</span>
+<span class="sd">        straight: Calculates the straight-line distance to the terminal segment, assuming a direct path.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    axon_length_to_terminal : float</span>
+<span class="sd">        The calculated axon length to the terminal segment.</span>
+<span class="sd">    closest_endseg : Segment</span>
+<span class="sd">        The closest terminal segment object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">furthest_dist</span><span class="p">,</span> <span class="n">furthest_seg</span> <span class="o">=</span> <span class="n">furthest_point</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;plane&quot;</span><span class="p">:</span>
+        <span class="n">distal_line</span> <span class="o">=</span> <span class="n">define_xy_line</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">get_average_endpoints</span><span class="p">(</span><span class="n">cell</span><span class="p">),</span>
+            <span class="n">getsegxyz</span><span class="p">(</span><span class="n">furthest_seg</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">get_children_secs</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">get_children_secs</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">sec</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">closest_dist</span><span class="p">,</span> <span class="n">closest_endseg</span> <span class="o">=</span> <span class="n">closest_tip</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">seg</span><span class="p">)</span>
+        <span class="n">axon_length_to_terminal</span> <span class="o">=</span> <span class="n">dist_from_line</span><span class="p">(</span>
+            <span class="n">distal_line</span><span class="p">,</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">closest_endseg</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cartesian&quot;</span><span class="p">:</span>
+        <span class="n">closest_dist</span><span class="p">,</span> <span class="n">closest_endseg</span> <span class="o">=</span> <span class="n">closest_tip</span><span class="p">(</span>
+            <span class="n">get_children_secs</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">),</span> <span class="n">seg</span>
+        <span class="p">)</span>
+        <span class="n">furthest_x</span><span class="p">,</span> <span class="n">furthest_y</span><span class="p">,</span> <span class="n">furthest_z</span> <span class="o">=</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">furthest_seg</span><span class="p">)</span>
+        <span class="n">closest_x</span><span class="p">,</span> <span class="n">closest_y</span><span class="p">,</span> <span class="n">closest_z</span> <span class="o">=</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">closest_endseg</span><span class="p">)</span>
+        <span class="c1"># Axon trajectories prior to reaching a terminal segment are assumed</span>
+        <span class="c1"># to only travel along one of the three axes at once</span>
+        <span class="n">axon_length_to_terminal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">closest_x</span> <span class="o">-</span> <span class="n">furthest_x</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">closest_y</span> <span class="o">-</span> <span class="n">furthest_y</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">closest_z</span> <span class="o">-</span> <span class="n">furthest_z</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;straight&quot;</span><span class="p">:</span>
+        <span class="n">closest_dist</span><span class="p">,</span> <span class="n">closest_endseg</span> <span class="o">=</span> <span class="n">closest_tip</span><span class="p">(</span>
+            <span class="n">get_children_secs</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">),</span> <span class="n">seg</span>
+        <span class="p">)</span>
+        <span class="n">furthest_x</span><span class="p">,</span> <span class="n">furthest_y</span><span class="p">,</span> <span class="n">furthest_z</span> <span class="o">=</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">furthest_seg</span><span class="p">)</span>
+        <span class="n">axon_length_to_terminal</span> <span class="o">=</span> <span class="n">distance3D</span><span class="p">(</span><span class="n">getsegxyz</span><span class="p">(</span><span class="n">seg</span><span class="p">),</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">closest_endseg</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Invalid method for axon length calculation. Choose &#39;plane&#39;, &#39;cartesian&#39;, or &#39;straight&#39;.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">axon_length_to_terminal</span><span class="p">,</span> <span class="n">closest_endseg</span></div>
+
+
+
+<div class="viewcode-block" id="axon_length_along">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.axon_length_along">[docs]</a>
+<span class="k">def</span> <span class="nf">axon_length_along</span><span class="p">(</span><span class="n">seg_1</span><span class="p">:</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">seg_2</span><span class="p">:</span> <span class="n">Segment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the length of the axon segment between two given segments. Equivalent to h.distance(seg_1, seg_2).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance containing the sections.</span>
+<span class="sd">    seg_1 : Segment</span>
+<span class="sd">        The starting segment of the axon path.</span>
+<span class="sd">    seg_2 : Segment</span>
+<span class="sd">        The ending segment of the axon path.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    axon_pathlength : float</span>
+<span class="sd">        The calculated length of the axon segment between the two given segments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axon_pathlength</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">seg_1</span><span class="p">,</span> <span class="n">seg_2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">axon_pathlength</span> <span class="o">==</span> <span class="mf">1e20</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Path between segments not found, returning 1e20&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">axon_pathlength</span></div>
+
+
+
+<div class="viewcode-block" id="get_input_lengths">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.get_input_lengths">[docs]</a>
+<span class="k">def</span> <span class="nf">get_input_lengths</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total length of all input paths in a cell.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance containing the sections.</span>
+<span class="sd">    sectionlist : list, optional</span>
+<span class="sd">        A list of sections to consider. If None, uses all sections in the cell.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The total length of all input paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_lengths</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="n">section_lists</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span> 
+                <span class="n">length_to_term</span><span class="p">,</span> <span class="n">end_seg</span> <span class="o">=</span> <span class="n">axon_length_to_terminal</span><span class="p">(</span>
+                    <span class="n">cell</span><span class="p">,</span>
+                    <span class="n">seg</span><span class="p">,</span>
+                    <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">,</span>
+                    <span class="n">method</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="s2">&quot;plane&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">length_along</span> <span class="o">=</span> <span class="n">axon_length_along</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">end_seg</span><span class="p">)</span>
+                <span class="n">input_lengths</span><span class="p">[</span><span class="n">seg</span><span class="p">]</span> <span class="o">=</span> <span class="n">length_to_term</span> <span class="o">+</span> <span class="n">length_along</span>
+    <span class="k">return</span> <span class="n">input_lengths</span></div>
+
+
+
+<div class="viewcode-block" id="get_average_endpoints">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.get_average_endpoints">[docs]</a>
+<span class="k">def</span> <span class="nf">get_average_endpoints</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span>
+    <span class="n">sectionlist_1</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sectionlist_2</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the average coordinates of the terminal segments at the ends of the cell for use defining line parallel to cell orientation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance containing the sections.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Two tuples containing the average coordinates (x, y) of the lateral and medial terminal segments, respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ends_1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">tiplist</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">lateral_nofilopodia</span> <span class="k">if</span> <span class="n">sectionlist_1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sectionlist_1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">x_1</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">y_1</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">ends_1</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">end</span><span class="p">(</span><span class="mf">0.999</span><span class="p">))</span>
+        <span class="n">x_1</span> <span class="o">+=</span> <span class="n">x</span>
+        <span class="n">y_1</span> <span class="o">+=</span> <span class="n">y</span>
+    <span class="n">x_1</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ends_1</span><span class="p">)</span>
+    <span class="n">y_1</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ends_1</span><span class="p">)</span>
+    <span class="n">x_2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">y_2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ends_2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">tiplist</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">medial_nofilopodia</span> <span class="k">if</span> <span class="n">sectionlist_2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sectionlist_2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">ends_2</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">end</span><span class="p">(</span><span class="mf">0.999</span><span class="p">))</span>
+        <span class="n">x_2</span> <span class="o">+=</span> <span class="n">x</span>
+        <span class="n">y_2</span> <span class="o">+=</span> <span class="n">y</span>
+    <span class="n">x_2</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ends_2</span><span class="p">)</span>
+    <span class="n">y_2</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ends_2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x_1</span><span class="p">,</span> <span class="n">y_1</span><span class="p">),</span> <span class="p">(</span><span class="n">x_2</span><span class="p">,</span> <span class="n">y_2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_all_input_lengths">
+<a class="viewcode-back" href="../../calc_cell.html#golding_mso.cell_calc.get_all_input_lengths">[docs]</a>
+<span class="k">def</span> <span class="nf">get_all_input_lengths</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total length of all input paths in a cell.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance containing the sections.</span>
+<span class="sd">    sectionlist : list, optional</span>
+<span class="sd">        A list of sections to consider. If None, uses all sections in the cell.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The total length of all input paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_lengths</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">for</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="n">section_lists</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+                <span class="n">length_to_term</span><span class="p">,</span> <span class="n">end_seg</span> <span class="o">=</span> <span class="n">axon_length_to_terminal</span><span class="p">(</span>
+                    <span class="n">cell</span><span class="p">,</span> <span class="n">seg</span><span class="p">,</span> <span class="n">section_list</span><span class="o">=</span><span class="n">section_list</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="s2">&quot;plane&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">length_along</span> <span class="o">=</span> <span class="n">axon_length_along</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">end_seg</span><span class="p">)</span>
+                <span class="n">input_lengths</span><span class="p">[</span><span class="n">seg</span><span class="p">]</span> <span class="o">=</span> <span class="n">length_to_term</span> <span class="o">+</span> <span class="n">length_along</span>
+    <span class="k">return</span> <span class="n">input_lengths</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
