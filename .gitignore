@@ -5,3 +5,4 @@ __pycache__/
 *.cpp
 *.o
 **/plots.py
+._*
