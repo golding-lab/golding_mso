@@ -6,7 +6,8 @@
 GoldingMSO documentation
 ========================
 
-../../readme.md
+.. include:: ../../readme.md
+   :parser: myst_parser.sphinx
 
 .. toctree::
    :caption: Modules:
