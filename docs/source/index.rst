@@ -7,10 +7,9 @@ GoldingMSO documentation
 ========================
 
 .. toctree::
-   :caption: Docs
+   :caption: Home
+   ../../readme.md
 
-   readme.md
-   
 .. toctree::
    :caption: Modules:
 
@@ -28,6 +27,3 @@ GoldingMSO documentation
    :name: general
    
    genindex
-
-.. include:: readme.md
-   :parser: myst_parser.sphinx
