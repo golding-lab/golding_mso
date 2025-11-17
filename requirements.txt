@@ -3,4 +3,5 @@ numpy
 scipy
 pandas
 neuron
-sphinx-rtd-theme
+myst_parser
+furo

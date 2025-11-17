@@ -18,7 +18,7 @@ release = '0.0.1'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
+extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'myst_parser']
 autodoc_member_order = 'groupwise'
 
 templates_path = ['_templates']
@@ -30,9 +30,10 @@ autodoc_typehints = 'description'
 autodoc_default_options = {'show-inheritance':False}
 autodoc_typehints_description_target='documented'
 autoclass_content='both'
+master_doc = 'readme'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
 html_static_path = ['_static']
