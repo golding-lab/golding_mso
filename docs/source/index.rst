@@ -7,6 +7,7 @@ GoldingMSO documentation
 ========================
 
 .. toctree::
+   :hidden:
    :caption: Modules:
 
    calc_cell
@@ -23,3 +24,6 @@ GoldingMSO documentation
    :name: general
    
    genindex
+
+.. include:: readme.md
+   :parser: myst_parser.sphinx

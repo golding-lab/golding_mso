@@ -30,7 +30,6 @@ autodoc_typehints = 'description'
 autodoc_default_options = {'show-inheritance':False}
 autodoc_typehints_description_target='documented'
 autoclass_content='both'
-master_doc = 'readme'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
