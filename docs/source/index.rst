@@ -7,7 +7,11 @@ GoldingMSO documentation
 ========================
 
 .. toctree::
-   :hidden:
+   :caption: Docs
+
+   readme.md
+   
+.. toctree::
    :caption: Modules:
 
    calc_cell
