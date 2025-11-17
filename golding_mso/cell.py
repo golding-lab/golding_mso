@@ -66,7 +66,7 @@ class Cell:
 
     Example usage:
     ::
-    
+
         import golding_mso as gmso
         import matplotlib.pyplot as plt
         from neuron import h
@@ -324,10 +324,19 @@ class Cell:
         filopodia_maximum_diameter: float = None,
     ) -> None:
         """
-        Categorizes NEURON sections into various SectionLists and culls filopodia.
+        Categorizes NEURON sections into various lists and culls filopodia.
 
-        SectionLists include somatic, lateral, medial, dendrites, and their
+        Lists include `somatic, lateral, medial, dendrites, and their
         respective versions without filopodia (_nofilopodia).
+
+        *Automatic categorization depends on labels assigned in Neurolucida:*
+
+        ================    ======
+        Neurolucida         Python
+        ================    =======
+        Soma                somatic
+        Apical dendrites    lateral
+        Dendrites           medial
 
         Parameters
         ----------
@@ -345,9 +354,27 @@ class Cell:
 
         # apical & dend label used to identify dendritic poles
         # (labeled in Neurolucida)
-        self.somatic = self.soma
-        self.lateral = self.apic
-        self.medial = self.dend
+        try:
+            self.somatic = self.soma
+        except AttributeError:
+            self.somatic = []
+            logger.warning(
+                "Soma section not found/labeled correctly. Assign manually if necessary."
+            )
+        try:
+            self.lateral = self.apic
+        except AttributeError:
+            self.lateral = []
+            logger.warning(
+                "Lateral sections not found/labeled correctly. Expected sections labeled as apical dendrites in Neurolucida. Assign manually if necessary."
+            )
+        try:
+            self.medial = self.dend
+        except AttributeError:
+            self.medial = []
+            logger.warning(
+                "Medial sections not found/labeled correctly. Expected sections labeled as standard dendrites in Neurolucida. Assign manually if necessary."
+            )
         self.dendrites = self.medial + self.lateral
         self.allsec = self.somatic + self.dendrites
 
@@ -886,7 +913,7 @@ class Cell:
         """
         Sets an artificial resting potential with a measured indefinite current injection
         at the soma.
-        
+
         Parameters
         ----------
         resting_potential : float

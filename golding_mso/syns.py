@@ -1,4 +1,3 @@
-
 """
 This module provides classes and functions for creating and managing synaptic units (Exp2Syn, Netcon & Netstim)
 in NEURON simulations, including random and path-based innervation of cell sections.
@@ -13,23 +12,22 @@ from .cell import Cell
 from .cell_calc import tiplist, parentlist, section_list_length
 
 
-
-
 class SynapseUnit:
     """
     Represents a synaptic unit consisting of a Exp2Syn, NetStim, and NetCon on a given segment.
     Handles creation and management of synaptic parameters and firing probability.
     """
+
     def __init__(self, segment: Segment, **kwargs) -> None:
         r"""
-        Initialize a SynapseUnit on a given segment. 
+        Initialize a SynapseUnit on a given segment.
         A Synapse consists of an Exp2Syn synapse, a NetStim for stimulation, and a NetCon to connect them.
 
         Parameters
         ----------
-        segment : Segment 
+        segment : Segment
             The NEURON segment to place the synapse on.
-        \**kwargs: 
+        \**kwargs:
             Optional parameters for synapse and stimulation properties.
             firing_probability (float): Probability the synapse will fire (default 1.0).
             start (float): Start time for NetStim (default 0).
@@ -52,10 +50,10 @@ class SynapseUnit:
         ----------
         \**kwargs:
             tau1, tau2, e (optional synaptic parameters).
-       
+
         Returns
         -------
-        Exp2Syn: 
+        Exp2Syn:
             The created synapse object.
         """
         syn = h.Exp2Syn(self.segment)
@@ -72,10 +70,10 @@ class SynapseUnit:
         ----------
         \**kwargs:
             number, interval, noise (optional stimulation parameters).
-        
+
         Returns
         -------
-        NetStim: 
+        NetStim:
             The created NetStim object.
         """
         netstim = h.NetStim()
@@ -95,10 +93,10 @@ class SynapseUnit:
         ----------
         \**kwargs:
             gmax (weight), delay (optional connection parameters).
-        
+
         Returns
         -------
-        NetCon: 
+        NetCon:
             The created NetCon object.
         """
         netcon = h.NetCon(self.netstim, self.syn)
@@ -135,6 +133,7 @@ class SynapseUnit:
         del self.netstim
         del self.netcon
 
+
 def innervate_total(section_list: list[Section], **kwargs) -> list[SynapseUnit]:
     r"""
     Create SynapseUnits for every segment in the provided list of sections.
@@ -143,15 +142,17 @@ def innervate_total(section_list: list[Section], **kwargs) -> list[SynapseUnit]:
     ----------
     section_list : list[Section]
         List of NEURON Section objects.
-    \**kwargs: 
+    \**kwargs:
         Passed to SynapseUnit constructor.
-        
+
     Returns
     -------
-    list[SynapseUnit]: 
+    list[SynapseUnit]:
         List of created SynapseUnit objects.
     """
-    syn_units = innervate_points(*[seg for sec in section_list for seg in sec], **kwargs)
+    syn_units = innervate_points(
+        *[seg for sec in section_list for seg in sec], **kwargs
+    )
     return syn_units
 
 
@@ -163,12 +164,12 @@ def innervate_points(*segments: list[Segment], **kwargs) -> list[SynapseUnit]:
     ----------
     \*segments : list[Segment]
         Segments to innervate.
-    \**kwargs: 
+    \**kwargs:
         Passed to SynapseUnit constructor.
-        
+
     Returns
     -------
-    list[SynapseUnit]: 
+    list[SynapseUnit]:
         List of created SynapseUnit objects.
     """
     units = []
@@ -178,7 +179,14 @@ def innervate_points(*segments: list[Segment], **kwargs) -> list[SynapseUnit]:
     return units
 
 
-def innervate_random(cell: Cell, section_list: list[Section], numgroups: int = 1, numsyns: int = 4, synspace: float = 7, **kwargs) -> list[list[SynapseUnit]]:
+def innervate_random(
+    cell: Cell,
+    section_list: list[Section],
+    numgroups: int = 1,
+    numsyns: int = 4,
+    synspace: float = 7,
+    **kwargs,
+) -> list[list[SynapseUnit]]:
     r"""
     Randomly innervate a cell with groups of SynapseUnits along random paths.
 
@@ -196,7 +204,7 @@ def innervate_random(cell: Cell, section_list: list[Section], numgroups: int = 1
         Minimum spacing between synapses.
     \**kwargs:
         Passed to SynapseUnit constructor.
-    
+
     Returns
     -------
     list[list[SynapseUnit]]:
@@ -250,8 +258,16 @@ def innervate_random(cell: Cell, section_list: list[Section], numgroups: int = 1
         synapse_groups.append(innervate_points(*segments_for_placement, **kwargs))
     return synapse_groups
 
-#TODO Replace with SynapseUnit functionality
-def syn_path_place(cell: Cell, section_list: list[Section], locations: list[float], tau1=0.270, tau2=0.271, e=15):
+
+# TODO Replace with SynapseUnit functionality
+def syn_path_place(
+    cell: Cell,
+    section_list: list[Section],
+    locations: list[float],
+    tau1=0.270,
+    tau2=0.271,
+    e=15,
+):
 
     lengtharray = []
     synlist = []
@@ -277,10 +293,14 @@ def syn_path_place(cell: Cell, section_list: list[Section], locations: list[floa
             else:
                 sectioncount += 1
                 lengthcount += length
-        syn = SynapseUnit(list(section_list)[sectionindex](
+        syn = SynapseUnit(
+            list(section_list)[sectionindex](
                 loconsec / list(section_list)[sectionindex].L
             ),
-            tau1=tau1, tau2=tau2, e=e)
+            tau1=tau1,
+            tau2=tau2,
+            e=e,
+        )
         # syn = h.Exp2Syn(
         #     list(section_list)[sectionindex](
         #         loconsec / list(section_list)[sectionindex].L
@@ -295,6 +315,7 @@ def syn_path_place(cell: Cell, section_list: list[Section], locations: list[floa
 
     return synlist
 
+
 def create_synunit(segment: Segment, **kwargs) -> SynapseUnit:
     r"""
     Helper function to create a SynapseUnit on a given segment.
@@ -303,13 +324,12 @@ def create_synunit(segment: Segment, **kwargs) -> SynapseUnit:
     ----------
     segment : Segment
         The NEURON segment to place the synapse on.
-    \**kwargs: 
+    \**kwargs:
         Passed to SynapseUnit constructor.
-        
+
     Returns
     -------
-    SynapseUnit: 
+    SynapseUnit:
         The created SynapseUnit object.
     """
     return SynapseUnit(segment, **kwargs)
-

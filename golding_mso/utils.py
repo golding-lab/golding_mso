@@ -180,6 +180,7 @@ def get_package_path() -> pathlib.Path:
     """
     return files("golding_mso")
 
+
 def load_dll(dll_path: str = ""):
     """
     Load a compiled NEURON mechanism DLL.
@@ -206,7 +207,7 @@ def load_pkg_dll():
     Load the compiled NEURON mechanism DLL from the package directory.
     """
     cwd = get_package_path() / "mechanisms"
-    dll_paths = [('x86_64','libnrnmech.dylib'), (r"nrnmech.dll",)]
+    dll_paths = [("x86_64", "libnrnmech.dylib"), (r"nrnmech.dll",)]
     for dll_path in dll_paths:
         full_path = cwd.joinpath(*dll_path)
         if os.path.exists(full_path):

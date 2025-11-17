@@ -1,4 +1,3 @@
-
 import logging
 import math
 import numpy as np
@@ -60,15 +59,17 @@ def propagation_test(
     # Adds each max voltage and time value to created 2d list: [section][seg time/voltage]
     return propagation_data
 
-            
-            
-    
+
 def compute_propagation_test_difference(
-    rec_site: dict[str, dict[str,float]], synapse: dict[str, dict[str,float]], func: Callable, which: str="voltage", **kwargs
-    ) -> list:
+    rec_site: dict[str, dict[str, float]],
+    synapse: dict[str, dict[str, float]],
+    func: Callable,
+    which: str = "voltage",
+    **kwargs,
+) -> list:
     r"""
     Compute the difference between rec_site and synapse data using a provided function.
-    
+
     Parameters
     ----------
     rec_site : dict
@@ -81,7 +82,7 @@ def compute_propagation_test_difference(
         Specifies whether to compute for 'voltage' or 'time'. Default is 'voltage'.
     \**kwargs : dict
         Additional keyword arguments to pass to the function.
-    
+
     Returns
     -------
     section_data: list
@@ -105,13 +106,13 @@ def find_compensated_cond(
     seg: Segment,
     maxv: float,
     desired_maxv: float,
-    max_val: float=-55.196,
-    original_gmax: float=0.005,
-    tolerance: float=0.1,
-    resting_potential: float=-61.7,
-    recursion_limit: int=20,
-    recursion_count: int=0,
-)-> float:
+    max_val: float = -55.196,
+    original_gmax: float = 0.005,
+    tolerance: float = 0.1,
+    resting_potential: float = -61.7,
+    recursion_limit: int = 20,
+    recursion_count: int = 0,
+) -> float:
     """
     Recursively adjusts synaptic conductance (gmax) to achieve a desired max voltage.
 
@@ -119,7 +120,7 @@ def find_compensated_cond(
     ----------
     cell : Cell
         The cell instance to use for the simulation.
-    seg : Segment   
+    seg : Segment
         The segment where the synapse is located.
     maxv : float
         The maximum voltage recorded from the initial simulation.
@@ -143,7 +144,7 @@ def find_compensated_cond(
     recursion_count : int, optional
         The current recursion depth.
         Default is 0.
-    
+
     Returns
     -------
     new_gmax: float
@@ -255,7 +256,14 @@ def indiv_syn_test(
 
 
 # TODO look into changing locs from 0-1 to 0-section.L
-def syn_place(section: Section, tau1: float=0.271, tau2: float=0.271, e: float=15, syn_density: float=None, locs: list[float]=None) -> list[Exp2Syn]:
+def syn_place(
+    section: Section,
+    tau1: float = 0.271,
+    tau2: float = 0.271,
+    e: float = 15,
+    syn_density: float = None,
+    locs: list[float] = None,
+) -> list[Exp2Syn]:
     logger.debug("Placing synapses on section: %s", section.name())
     """
     Creates Exp2Syn point processes along a given section.
@@ -321,11 +329,11 @@ def syn_test(
     synspace: float,
     axonspeed: float,
     numtrial: int,
-    num_fiber: int=1,
-    gmax: float=0.037,
-    release_probability: float=0.45,
-    traces: bool=False,
-    innervation_pattern: str="random",
+    num_fiber: int = 1,
+    gmax: float = 0.037,
+    release_probability: float = 0.45,
+    traces: bool = False,
+    innervation_pattern: str = "random",
 ) -> dict:
     logger.debug("Starting syn_test")
     """
@@ -549,18 +557,18 @@ def itd_test_sweep(
     offset_sections: list[Section],
     stable_sections: list[Section],
     innervation_pattern: str,
-    axon_speed:float=1,
-    cycles:int=1,
-    interval:float=1,
-    exc_fiber_gmax:float=0.037,
-    inhibition:bool=False,
-    inh_timing: float=-0.32,
-    inh_fiber_gmax: float=0.022,
-    threshold:float=25,
-    relative_threshold:bool=True,
-    record_axon:bool=False,
-    itd_vals:list[float]=None,
-    traces:bool=False,
+    axon_speed: float = 1,
+    cycles: int = 1,
+    interval: float = 1,
+    exc_fiber_gmax: float = 0.037,
+    inhibition: bool = False,
+    inh_timing: float = -0.32,
+    inh_fiber_gmax: float = 0.022,
+    threshold: float = 25,
+    relative_threshold: bool = True,
+    record_axon: bool = False,
+    itd_vals: list[float] = None,
+    traces: bool = False,
     **kwargs,
 ) -> dict:
     r"""
@@ -631,9 +639,10 @@ def itd_test_sweep(
             )
     spike_counts = np.zeros(len(itd_vals))
     inh_delays = np.array([inh_timing, inh_timing - 0.06])
-    sim_start_time = abs(min(np.min(itd_vals), np.min(inh_delays))) + cell.stabilization_time
+    sim_start_time = (
+        abs(min(np.min(itd_vals), np.min(inh_delays))) + cell.stabilization_time
+    )
     logger.debug(f"itd vals:{itd_vals}")
-
 
     if innervation_pattern == "random":
         if {"numsyn", "synspace", "numfiber"}.issubset(kwargs):
@@ -644,35 +653,38 @@ def itd_test_sweep(
             raise Exception(
                 "numsyn, synspace, and numfiber must be provided for random innervation pattern"
             )
-    
-    input_length_lookup = get_all_input_lengths(cell, [offset_sections, stable_sections], **kwargs)
+
+    input_length_lookup = get_all_input_lengths(
+        cell, [offset_sections, stable_sections], **kwargs
+    )
     if innervation_pattern == "total":
         total_synlists = []
         for section_list in section_lists:
-            syngroups = [innervate_total(section_list, interval=interval, cycles=cycles)]
+            syngroups = [
+                innervate_total(section_list, interval=interval, cycles=cycles)
+            ]
             total_synlists.append(syngroups)
         dist_cond = exc_fiber_gmax / (
             sum([sec.nseg for sec in (list(offset_sections) + list(stable_sections))])
         )
 
-    
-
-    itd_vals_print = ', '.join([f"{val:.2f}" for val in itd_vals[:3]])
-    itd_vals_print += '...'
+    itd_vals_print = ", ".join([f"{val:.2f}" for val in itd_vals[:3]])
+    itd_vals_print += "..."
     logger.info("Starting itd_test with delays: %s", itd_vals_print)
     line_width = 50
     log_str = "Parameters: \n"
     for key, value in saved_args.items():
         param_str = f"{key}: {value}"
-        space = " " *(len(key)+2)
+        space = " " * (len(key) + 2)
         if len(param_str) > line_width:
             log_str += f"\t{param_str[:line_width]}...\n"
             param_str = param_str[line_width:]
             while len(param_str) > line_width:
-                
+
                 log_str += f"\t{space}{param_str[:line_width]}...\n"
                 param_str = param_str[line_width:]
-            if len(param_str) != 0: log_str += f"\t{space}{param_str}\n"
+            if len(param_str) != 0:
+                log_str += f"\t{space}{param_str}\n"
         elif len(param_str) != 0:
             log_str += f"\t{param_str}\n"
     logger.debug(log_str)
@@ -710,10 +722,10 @@ def itd_test_sweep(
                     )
                     + (
                         axon_length_along(
-                        inhibitsyn.get_segment(),
-                        cell.somatic[0](0.5),
+                            inhibitsyn.get_segment(),
+                            cell.somatic[0](0.5),
                         )
-                       / (axon_speed * 1000)
+                        / (axon_speed * 1000)
                     )
                 )
 
@@ -749,17 +761,17 @@ def itd_test_sweep(
                             if innervation_pattern == "random"
                             else dist_cond
                         )
-                   
+
                     axon_delay = 0
                     if axon_speed != 0:
                         axon_length = input_length_lookup[syn_unit.segment]
                         axon_delay = axon_length / (1000 * axon_speed)
 
-                    syn_unit.netstim.start = (
-                        sim_start_time + axon_delay
-                    )
+                    syn_unit.netstim.start = sim_start_time + axon_delay
 
-                    syn_unit.netstim.start += itd_val if section_list == offset_sections else 0
+                    syn_unit.netstim.start += (
+                        itd_val if section_list == offset_sections else 0
+                    )
 
         v_soma = h.Vector()
         v_axon = h.Vector()
@@ -785,9 +797,11 @@ def itd_test_sweep(
             curr_traces["time_axon"] = t_axon.to_python()
             curr_traces["voltage_axon"] = v_axon.to_python()
 
-        spike_counts[itd_num] = int(_cross_threshold(
-            v_monitor, threshold=threshold, relative=relative_threshold
-        ))
+        spike_counts[itd_num] = int(
+            _cross_threshold(
+                v_monitor, threshold=threshold, relative=relative_threshold
+            )
+        )
 
         for syn_list in syn_lists:
             for syn_group in syn_list:
@@ -803,7 +817,6 @@ def itd_test_sweep(
         "traces": trace_list if traces else None,
         "itd_vals": itd_vals,
     }
-
 
 
 def get_attenuation_values(
@@ -838,4 +851,3 @@ def get_attenuation_values(
 
     logger.info("Completed attenuation values calculation")
     return section_list_data
-

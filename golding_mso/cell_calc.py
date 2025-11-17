@@ -132,9 +132,7 @@ def section_list_length(
     return total_length
 
 
-def furthest_point(
-    cell: Cell, section_list: list[Section]
-) -> tuple[float, Segment]:
+def furthest_point(cell: Cell, section_list: list[Section]) -> tuple[float, Segment]:
     """
     Finds the furthest segment and its distance from the soma.
 
@@ -219,9 +217,7 @@ def getsegxyz(seg: Segment) -> tuple[float, float, float]:
     return coords
 
 
-def closest_tip(
-    section_list: list[Section], seg: Segment
-) -> tuple[float, Segment]:
+def closest_tip(section_list: list[Section], seg: Segment) -> tuple[float, Segment]:
     """
     Returns the closest tip section's terminal segment to a given segment in a section list.
     """
@@ -316,6 +312,7 @@ def mep(cell: Cell, section_list: list[Section]) -> float:
     sections = section_list
     pjarray = np.zeros(len(list(sections)))
     section_count = 0
+
     def pj(cell: Cell, section_list: list[Section]) -> float:
         """
         Returns sum of electrotonic pathlengths. Used for MEP calculation.
@@ -479,7 +476,7 @@ def get_input_lengths(cell: Cell, section_lists: list[list[Section]], **kwargs):
     input_lengths = {}
     for section_list in section_lists:
         for sec in section_list:
-            for seg in sec: 
+            for seg in sec:
                 length_to_term, end_seg = axon_length_to_terminal(
                     cell,
                     seg,
@@ -533,6 +530,7 @@ def get_average_endpoints(
     y_2 /= len(ends_2)
     return (x_1, y_1), (x_2, y_2)
 
+
 def get_all_input_lengths(cell, section_lists, **kwargs):
     """
     Calculates the total length of all input paths in a cell.
@@ -550,12 +548,15 @@ def get_all_input_lengths(cell, section_lists, **kwargs):
         The total length of all input paths.
     """
     input_lengths = {}
-    
+
     for section_list in section_lists:
         for sec in section_list:
             for seg in sec:
                 length_to_term, end_seg = axon_length_to_terminal(
-                    cell, seg, section_list=section_list, method = kwargs.pop("method", "plane")
+                    cell,
+                    seg,
+                    section_list=section_list,
+                    method=kwargs.pop("method", "plane"),
                 )
                 length_along = axon_length_along(seg, end_seg)
                 input_lengths[seg] = length_to_term + length_along

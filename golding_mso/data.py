@@ -58,7 +58,7 @@ def get_itd_averages(
     parameters_to_keep = []
     drop_columns = [
         column
-        for column in itd_df.columns[: -len(itd_df.columns) - 1] #could've broken here
+        for column in itd_df.columns[: -len(itd_df.columns) - 1]  # could've broken here
         if ((column not in parameters) and column != "name")
     ]
     itd_df = itd_df.drop(columns=drop_columns)
