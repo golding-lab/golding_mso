@@ -10,9 +10,10 @@ GoldingMSO documentation
 .. toctree::
    :caption: Home:
 
-   ../../readme.md
+   ../readme.md
 
 .. toctree::
+   
    :caption: Modules:
 
    calc_cell
