@@ -1,7 +1,7 @@
 """
-Golding Lab NEURON Tools - A package for neuronal modeling and simulation
+GoldingMSO - A package for neuronal modeling and simulation
 
-This package provides tools for compartmental modeling using the NEURON simulator,
+This package provides tools for compartmental MSO modeling using the NEURON simulator,
 with specialized modules for handling cell morphologies, running simulations, and
 analyzing data related to interaural time difference (ITD) processing.
 

@@ -3,7 +3,7 @@ name = "golding_mso"
 authors = [
   {name="Jared Casarez", email="jaredcasarez1@gmail.com"},
 ]
-description = "Golding Lab MSO NEURON project library"
+description = "GoldingMSO NEURON project library"
 readme = "readme.md"
 requires-python = ">= 3.8"
 dependencies = [

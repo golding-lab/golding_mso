@@ -1,5 +1,5 @@
 """
-This module provides functions for geometric and mathematical calculations used in neuronal modeling.
+This module provides functions for geometric and mathematical calculations.
 """
 
 import math

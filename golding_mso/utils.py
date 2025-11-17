@@ -1,5 +1,5 @@
 """
-This module provides utility functions for the golding_mso package, such as file path helpers.
+This module provides utility functions for the package, such as file path helpers.
 """
 
 import json
@@ -277,7 +277,7 @@ def compile_mechs(
             print(e.stderr)
     dll_paths = ["/x86_64/libnrnmech.dylib", r"\nrnmech.dll"]
     for dll_path in dll_paths:
-        full_path = cwd / dll_path
+        full_path = cwd.joinpath(*dll_path.split("/"))
         if os.path.exists(full_path):
             logger.info(f"Loading compiled mechanism from {full_path}")
             try:

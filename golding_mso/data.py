@@ -13,10 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_itd_averages(
-    filepath: str = None,
-    df: pd.DataFrame = None,
-    parameters: list[str] = [],
-    delay_values: np.ndarray = np.arange(-0.5, 0.51, 0.01),
+    filepath: str = None, df: pd.DataFrame = None, parameters: list[str] = []
 ) -> pd.DataFrame:
     """
     Calculate ITD averages from a CSV file,
@@ -27,10 +24,10 @@ def get_itd_averages(
     ----------
     filepath : str
         Path to the CSV file containing ITD data.
+    df : pd.DataFrame, optional
+        DataFrame containing ITD data. If provided, 'filepath' is ignored.
     parameters : list, optional
         List of parameter names to group by.
-    delay_values : np.ndarray, optional
-        Array of delay values.
 
     Returns
     -------
@@ -55,28 +52,42 @@ def get_itd_averages(
             sort_by.append(parameter)
     itd_averages_pd = pd.DataFrame()
     names_to_keep = []
-    parameters_to_keep = []
+    
+    # Remove unprompted columns
     drop_columns = [
         column
-        for column in itd_df.columns[: -len(itd_df.columns) - 1]  # could've broken here
-        if ((column not in parameters) and column != "name")
+        for column in itd_df.columns  # could've broken here
+        if (
+            (column not in parameters)
+            and (column != "name")
+            and (not isinstance(column, (float, int)))
+        )
     ]
     itd_df = itd_df.drop(columns=drop_columns)
+    
     for name in names:
         if parameters:
-            combinations = list(product(*list(parameter_vals.values())))
+            combinations = list(product(*list(parameter_vals.values()))) # generate all parameter combos
             for combination in combinations:
                 cell_itds_df = itd_df.loc[(itd_df["name"] == name)]
-                for parameter, parameter_val in zip(parameters, combination):
-                    cell_itds_df = cell_itds_df.loc[
-                        cell_itds_df[parameter] == parameter_val
-                    ]
+                cell_param_itds_df = cell_itds_df
+                cell_param_itds_df = cell_param_itds_df.loc[
+                    np.logical_and.reduce([(cell_param_itds_df[parameter] == parameter_val) for parameter, parameter_val in zip(parameters, combination)])
+                ] # get data that satisfies all parameter values in combo
 
-                average_cell_itd = (
-                    cell_itds_df.mean(axis=0, numeric_only=True).to_frame().T
+                average_cell_param_itd = (
+                    cell_param_itds_df.mean(axis=0, numeric_only=True).to_frame().T
                 )
-                names_to_keep.append(name)
-                itd_averages_pd = pd.concat([itd_averages_pd, average_cell_itd], axis=0)
+                
+                # Reinsert name and parameter columns
+                average_cell_param_itd.insert(0, "name", name)
+                for parameter, parameter_val in zip(parameters, combination):
+                    average_cell_param_itd.insert(
+                        1,
+                        parameter,
+                        parameter_val,
+                    )
+                itd_averages_pd = pd.concat([itd_averages_pd, average_cell_param_itd], axis=0)
         else:
             cell_itds_df = itd_df.loc[itd_df["name"] == name]
             average_cell_itd = cell_itds_df.mean(axis=0, numeric_only=True).to_frame().T
@@ -88,7 +99,14 @@ def get_itd_averages(
                 ],
                 axis=0,
             )
-    itd_averages_pd.insert(0, "name", names_to_keep)
+            average_cell_itd.insert(0, "name", name)
+            itd_averages_pd = pd.concat(
+                [
+                    itd_averages_pd,
+                    average_cell_itd,
+                ],
+                axis=0,
+            )
     logger.info("Completed ITD averages calculation")
     return itd_averages_pd
 
@@ -101,7 +119,9 @@ def get_syntest_averages(filepath: str, df: pd.DataFrame = None) -> pd.DataFrame
     ----------
     filepath : str
         Path to the CSV file containing synapse test data.
-
+    df : pd.DataFrame, optional
+        DataFrame containing synapse test data. If provided, 'filepath' is ignored.
+        
     Returns
     -------
     averaged_groupsyn_pd : pd.DataFrame
@@ -187,7 +207,7 @@ def fit_gaussian_to_itd(
 
 def find_centroid(data: list[float], delay_values: list[float]) -> float:
     """
-    Find the centroid of a distribution.
+    Find the centroid of an ITD curve.
 
     Parameters
     ----------

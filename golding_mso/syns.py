@@ -259,7 +259,6 @@ def innervate_random(
     return synapse_groups
 
 
-# TODO Replace with SynapseUnit functionality
 def syn_path_place(
     cell: Cell,
     section_list: list[Section],
@@ -283,7 +282,7 @@ def syn_path_place(
         sectionindex = 0
         loconsec = 0
 
-        # move along the length of the path until section and relative location are found
+        # Move along the length of the path until section and relative location are found
         for length in lengtharray:
 
             if length + lengthcount > loc:
@@ -301,6 +300,7 @@ def syn_path_place(
             tau2=tau2,
             e=e,
         )
+        # Old implementation. New is less tested
         # syn = h.Exp2Syn(
         #     list(section_list)[sectionindex](
         #         loconsec / list(section_list)[sectionindex].L

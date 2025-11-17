@@ -1,3 +1,7 @@
+"""
+Module for running simulations (propagation, ITD, etc.) on MSO models.
+"""
+
 import logging
 import math
 import numpy as np

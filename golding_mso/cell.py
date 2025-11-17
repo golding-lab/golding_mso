@@ -1,4 +1,4 @@
-"""This module defines the Cell class for loading and manipulating neuronal morphologies in NEURON."""
+"""This module defines the Cell class for loading and manipulating neuronal MSO morphologies in NEURON."""
 
 import gc
 import logging
@@ -62,7 +62,7 @@ class ParamDict(dict):
 
 class Cell:
     """
-    Represents a neuron cell loaded from a morphology file, with methods for simulation and analysis in NEURON.
+    Represents a NEURON cell loaded from a morphology file, with methods for simulation and analysis in NEURON.
 
     Example usage:
     ::

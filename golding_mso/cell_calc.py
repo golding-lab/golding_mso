@@ -1,5 +1,5 @@
 """
-This module provides functions for compartmental modeling and analysis of NEURON cell morphologies, including path length, surface area, and tip detection utilities.
+This module provides functions for analysis of NEURON cell morphologies, such as path length, surface area, and terminal sections, etc.
 """
 
 import logging
