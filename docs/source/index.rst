@@ -10,7 +10,7 @@ GoldingMSO documentation
 .. toctree::
    :caption: Home:
 
-   ../readme.md
+   readme.md
 
 .. toctree::
    
