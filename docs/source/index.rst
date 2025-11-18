@@ -1,11 +1,11 @@
-.. include:: readme.md
+.. include:: ../build/html/readme.md
    :parser: myst_parser.sphinx_
 
 .. toctree::
    :caption: Home:
    :titlesonly:
 
-   readme.md
+   readme
 
 .. toctree::
    :caption: Modules:
