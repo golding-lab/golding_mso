@@ -33,6 +33,11 @@ autodoc_default_options = {'show-inheritance':False}
 autodoc_typehints_description_target='documented'
 autoclass_content='both'
 html_extra_path=['../../readme_files', '../../readme.md']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'restructuredtext',
+    '.md': 'markdown',
+}
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
