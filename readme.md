@@ -1,18 +1,12 @@
-# GoldingMSO Documentation
+<p align=center> <image  src="readme_files/160106_04_itd.gif" alt="Animated ITD simulation" height=300> </p>
 
-<p align=center>
+<h1 align=center > GoldingMSO </h1>
 
-![Animated ITD simulation](/readme_files/160106_04_itd.gif) 
-
-</p>
-
-
+<p align=center> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue&link=https%3A%2F%2Fgolding-mso.readthedocs.io%2Fen%2Flatest%2F"> </p>
 
 <p align=center>
 Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT Austin for compartmental modeling MSO neurons, using the simulation software, <a href="https://www.neuron.yale.edu/neuron/">NEURON</a>
 </p>
-
-
 
 ## Features
 
