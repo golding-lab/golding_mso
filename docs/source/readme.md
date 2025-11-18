@@ -13,11 +13,11 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 ## Features
 
 - 40 reconstructed MSO neuron morphologies
-  - [archived](https://github.com/golding-lab/golding_mso/cells.zip)
-  - [in repo](https://github.com/golding-lab/golding_mso/src/golding_mso/cells)
+  - [archived](https://github.com/golding-lab/golding_mso/blob/main/cells.zip)
+  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
 - Pre-defined channel definitions (KLT, KHT, HCN, Na)
-  - [archived](https://github.com/golding-lab/golding_mso/mechanisms.zip)
-  - [in repo](https://github.com/golding-lab/golding_mso/src/golding_mso/mechanisms)
+  - [archived](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/mechanisms.zip)
+  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/mechanisms)
 - Pre-configured tools
   - Synapse placement
   - EPSP propagation
@@ -42,11 +42,11 @@ pip install .
 ```
 
 ## Resources
-- [Documentation](https://golding-mso.readthedocs.io/en/latest/)
+- [Documentation](https://golding_mso.readthedocs.io/en/latest/)
 - [Golding Lab Website](https://goldinglab.org)
 - [NEURON Documentation](https://www.neuron.yale.edu/neuron/)
 - [GitHub Repository](https://github.com/golding-lab/golding_mso)
-- [Morphology files](https://github.com/golding-lab/golding_mso/src/golding_mso/cells)
+- [Morphology files](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
 
 <br>
 

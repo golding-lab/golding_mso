@@ -1,9 +1,8 @@
-GoldingMSO documentation
-========================
-
+.. include:: readme.md
 
 .. toctree::
    :caption: Home:
+   :titlesonly:
 
    readme.md
 
