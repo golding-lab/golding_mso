@@ -8,7 +8,6 @@ GoldingMSO documentation
    readme.md
 
 .. toctree::
-   
    :caption: Modules:
 
    calc_cell
