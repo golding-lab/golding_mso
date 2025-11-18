@@ -46,7 +46,7 @@ pip install .
 - [Golding Lab Website](https://goldinglab.org)
 - [NEURON Documentation](https://www.neuron.yale.edu/neuron/)
 - [GitHub Repository](https://github.com/golding-lab/golding_mso)
-- [Morphology files](/src/golding_mso/cells)
+- [Morphology files](https://github.com/golding-lab/golding_mso/src/golding_mso/cells)
 
 <br>
 
