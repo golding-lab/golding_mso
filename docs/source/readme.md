@@ -1,6 +1,4 @@
-<div align=center>
-  <img src="../../readme_files/160106_04_itd.gif" alt="animated ITD simulation" height="300"/>
-</div>
+<p align=center> <img src="/readme_files/160106_04_itd.gif" alt="animated ITD simulation" height="300"/> </p>
 
 # GoldingMSO Documentation
 
@@ -56,16 +54,15 @@ pip install .
 
 ## Loading cells
 
-
-
 ```python
 import golding_mso as gmso
 
 mso_cell = gmso.Cell(gmso.morphologies['151124_03'])
 ```
 
-    
-    516 lines read
+```
+516 lines read
+```
 
 
 ### Reconstructed morphologies
@@ -81,18 +78,20 @@ for i in range(0, len(gmso.morphologies), 4):
     print(list(gmso.morphologies.keys())[i:i+4])
 ```
 
-    Morphology cell keys:
-    -----------------------
-    ['151124_03', '151124_10P', '151124_11P', '151201_02_LOOK']
-    ['151201_05_LOOK', '151201_06P', '151209_03P', '151209_06_LOOK']
-    ['151209_09O', '151210_02P', '151210_03P_LOOK', '151210_04P_LOOK']
-    ['151214_03', '151210_07O_LOOK', '151214_09p', '151214_10P']
-    ['151217_03P_LOOK', '151217_04P', '151217_12p', '160105_10']
-    ['160105_12P', '160105_14P', '160105_15P', '160106_03P_LOOK']
-    ['160106_04_LOOK', '160111_02P', '160112_16P', '160112_19P']
-    ['160112_20P_LOOK', '160112_26P_LOOK', '160112_27P', '160123_08_LOOK']
-    ['160126_08_LOOK', '160305_01p', '160305_09P', '160317_16_LOOK']
-    ['160317_20P', '160318_16', '160318_21p', '151210_05P']
+```
+Morphology cell keys:
+-----------------------
+['151124_03', '151124_10P', '151124_11P', '151201_02_LOOK']
+['151201_05_LOOK', '151201_06P', '151209_03P', '151209_06_LOOK']
+['151209_09O', '151210_02P', '151210_03P_LOOK', '151210_04P_LOOK']
+['151214_03', '151210_07O_LOOK', '151214_09p', '151214_10P']
+['151217_03P_LOOK', '151217_04P', '151217_12p', '160105_10']
+['160105_12P', '160105_14P', '160105_15P', '160106_03P_LOOK']
+['160106_04_LOOK', '160111_02P', '160112_16P', '160112_19P']
+['160112_20P_LOOK', '160112_26P_LOOK', '160112_27P', '160123_08_LOOK']
+['160126_08_LOOK', '160305_01p', '160305_09P', '160317_16_LOOK']
+['160317_20P', '160318_16', '160318_21p', '151210_05P']
+```
 
 
 ### Viewing morphology
@@ -106,23 +105,24 @@ mso_cell = gmso.Cell(gmso.morphologies['151124_03'])
 mso_cell.topology()
 ```
 
-    
-    516 lines read
-    |--------------|   soma[0]
-                    `------------|   dend[0]
-                                  `----------|   dend[2]
-                                              `----------------------|   dend[6]
-                                              `----|   dend[3]
-                                                    `----|   dend[5]
-                                                    `------|   dend[4]
-                                  `------------------------------------------|   dend[1]
-                    `------------------------------------|   apic[0]
-                                                          `----------|   apic[4]
-                                                                      `--|   apic[6]
-                                                                      `----|   apic[5]
-                                                          `--------|   apic[1]
-                                                                    `--------------|   apic[3]
-                                                                    `------------|   apic[2]
+```
+516 lines read
+|--------------|   soma[0]
+                `------------|   dend[0]
+                                `----------|   dend[2]
+                                            `----------------------|   dend[6]
+                                            `----|   dend[3]
+                                                `----|   dend[5]
+                                                `------|   dend[4]
+                                `------------------------------------------|   dend[1]
+                `------------------------------------|   apic[0]
+                                                        `----------|   apic[4]
+                                                                    `--|   apic[6]
+                                                                    `----|   apic[5]
+                                                        `--------|   apic[1]
+                                                                `--------------|   apic[3]
+                                                                `------------|   apic[2]
+```
     
 
 
@@ -140,20 +140,17 @@ ps.show(0)
 ps.plot(fig)
 ```
 
-    
-    516 lines read
+```
+516 lines read
 
 
 
 
 
-    <Axis3DWithNEURON: >
+<Axis3DWithNEURON: >
+```
 
-
-
-
-    
-![png](../../readme_files/demo_7_2.png)
+![png](/readme_files/demo_7_2.png)
     
 
 
@@ -178,14 +175,14 @@ print(f"Updated resting potential: {mso_cell.resting_potential} mV")
 
 ```
 
-    
-    516 lines read
-    Original resting potential: -60.99978370571063 mV
-    
-    Modifying KHT channel mechanism and KLT conductance...
-    
-    Updated resting potential: -65.39322834144977 mV
+```
+516 lines read
+Original resting potential: -60.99978370571063 mV
 
+Modifying KHT channel mechanism and KLT conductance...
+
+Updated resting potential: -65.39322834144977 mV
+```
 
 ## Current injection
 
@@ -223,13 +220,14 @@ plt.legend()
 plt.show()
 ```
 
-    
-    516 lines read
+```    
+516 lines read
+```
 
 
 
     
-![png](../../readme_files/demo_11_1.png)
+![png](/readme_files/demo_11_1.png)
     
 
 
@@ -257,20 +255,21 @@ plt.ylabel('Propagation Delay (ms)')
 
 ```
 
+```  
+516 lines read
+
+
+
+
+
+Text(0, 0.5, 'Propagation Delay (ms)')
+```
+
+
+
+
     
-    516 lines read
-
-
-
-
-
-    Text(0, 0.5, 'Propagation Delay (ms)')
-
-
-
-
-    
-![png](../../readme_files/demo_13_2.png)
+![png](/readme_files/demo_13_2.png)
     
 
 
@@ -302,12 +301,9 @@ plt.show()
 
 
     
-![png](../../readme_files/demo_15_0.png)
+![png](/readme_files/demo_15_0.png)
     
-
-
 ## Editing config
-
 
 ```python
 from golding_mso import get_config, set_config, reset_config
@@ -327,105 +323,108 @@ pprint(get_config())
 reset_config();
 ```
 
-    --- Original Configuration ---
-    {'channels': {'hcn': {'cond_label': 'gbar',
-                          'ion': 'h',
-                          'mechanism': 'khurana_hcn',
-                          'reversal_potential': -35},
-                  'kht': {'cond_label': 'gbar',
-                          'ion': 'k',
-                          'mechanism': 'nabel_kht',
-                          'reversal_potential': -90},
-                  'klt': {'cond_label': 'gbar',
-                          'ion': 'k',
-                          'mechanism': 'mathews_klt',
-                          'reversal_potential': -90},
-                  'leak': {'cond_label': 'gbar',
-                           'ion': None,
-                           'mechanism': 'leak',
-                           'reversal_potential': -70},
-                  'na': {'cond_label': 'gbar',
-                         'ion': 'na',
-                         'mechanism': 'scott_na',
-                         'reversal_potential': 69}},
-     'conductances': {'cais': {'hcn': 0.002,
-                               'klt': 0.155,
-                               'leak': 5e-05,
-                               'na': 0.25},
-                      'dendrite': {'hcn': 0.001,
-                                   'kht': 0.00055,
-                                   'klt': 0.02,
-                                   'leak': 5e-05,
-                                   'na': 0},
-                      'internode': {'leak': 2e-05},
-                      'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
-                      'soma': {'hcn': 0.001,
-                               'kht': 0.00055,
-                               'klt': 0.04,
-                               'leak': 5e-05,
-                               'na': 0.03},
-                      'tais': {'hcn': 0.002,
-                               'klt': 0.155,
-                               'leak': 5e-05,
-                               'na': 0.25}},
-     'general': {'logging_level': 'ERROR'},
-     'initialization': {'Ra': 200,
-                        'cm': 0.9,
-                        'compartment_size': 2,
-                        'filopodia_maximum_diameter': 0.5,
-                        'filopodia_maximum_length': 15,
-                        'internode_cm': 0.0111,
-                        'stabilization_time': 100}}
-    
-    --- Modifying 'Ra' in 'initialization' to 150 ---
-    
-    --- Updated Configuration ---
-    {'channels': {'hcn': {'cond_label': 'gbar',
-                          'ion': 'h',
-                          'mechanism': 'khurana_hcn',
-                          'reversal_potential': -35},
-                  'kht': {'cond_label': 'gbar',
-                          'ion': 'k',
-                          'mechanism': 'nabel_kht',
-                          'reversal_potential': -90},
-                  'klt': {'cond_label': 'gbar',
-                          'ion': 'k',
-                          'mechanism': 'mathews_klt',
-                          'reversal_potential': -90},
-                  'leak': {'cond_label': 'gbar',
-                           'ion': None,
-                           'mechanism': 'leak',
-                           'reversal_potential': -70},
-                  'na': {'cond_label': 'gbar',
-                         'ion': 'na',
-                         'mechanism': 'scott_na',
-                         'reversal_potential': 69}},
-     'conductances': {'cais': {'hcn': 0.002,
-                               'klt': 0.155,
-                               'leak': 5e-05,
-                               'na': 0.25},
-                      'dendrite': {'hcn': 0.001,
-                                   'kht': 0.00055,
-                                   'klt': 0.02,
-                                   'leak': 5e-05,
-                                   'na': 0},
-                      'internode': {'leak': 2e-05},
-                      'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
-                      'soma': {'hcn': 0.001,
-                               'kht': 0.00055,
-                               'klt': 0.04,
-                               'leak': 5e-05,
-                               'na': 0.03},
-                      'tais': {'hcn': 0.002,
-                               'klt': 0.155,
-                               'leak': 5e-05,
-                               'na': 0.25}},
-     'general': {'logging_level': 'ERROR'},
-     'initialization': {'Ra': 150,
-                        'cm': 0.9,
-                        'compartment_size': 2,
-                        'filopodia_maximum_diameter': 0.5,
-                        'filopodia_maximum_length': 15,
-                        'internode_cm': 0.0111,
-                        'stabilization_time': 100}}
+```
+--- Original Configuration ---
+{'channels': {'hcn': {'cond_label': 'gbar',
+                        'ion': 'h',
+                        'mechanism': 'khurana_hcn',
+                        'reversal_potential': -35},
+                'kht': {'cond_label': 'gbar',
+                        'ion': 'k',
+                        'mechanism': 'nabel_kht',
+                        'reversal_potential': -90},
+                'klt': {'cond_label': 'gbar',
+                        'ion': 'k',
+                        'mechanism': 'mathews_klt',
+                        'reversal_potential': -90},
+                'leak': {'cond_label': 'gbar',
+                        'ion': None,
+                        'mechanism': 'leak',
+                        'reversal_potential': -70},
+                'na': {'cond_label': 'gbar',
+                        'ion': 'na',
+                        'mechanism': 'scott_na',
+                        'reversal_potential': 69}},
+    'conductances': {'cais': {'hcn': 0.002,
+                            'klt': 0.155,
+                            'leak': 5e-05,
+                            'na': 0.25},
+                    'dendrite': {'hcn': 0.001,
+                                'kht': 0.00055,
+                                'klt': 0.02,
+                                'leak': 5e-05,
+                                'na': 0},
+                    'internode': {'leak': 2e-05},
+                    'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
+                    'soma': {'hcn': 0.001,
+                            'kht': 0.00055,
+                            'klt': 0.04,
+                            'leak': 5e-05,
+                            'na': 0.03},
+                    'tais': {'hcn': 0.002,
+                            'klt': 0.155,
+                            'leak': 5e-05,
+                            'na': 0.25}},
+    'general': {'logging_level': 'ERROR'},
+    'initialization': {'Ra': 200,
+                    'cm': 0.9,
+                    'compartment_size': 2,
+                    'filopodia_maximum_diameter': 0.5,
+                    'filopodia_maximum_length': 15,
+                    'internode_cm': 0.0111,
+                    'stabilization_time': 100}}
+
+--- Modifying 'Ra' in 'initialization' to 150 ---
+
+--- Updated Configuration ---
+{'channels': {'hcn': {'cond_label': 'gbar',
+                        'ion': 'h',
+                        'mechanism': 'khurana_hcn',
+                        'reversal_potential': -35},
+                'kht': {'cond_label': 'gbar',
+                        'ion': 'k',
+                        'mechanism': 'nabel_kht',
+                        'reversal_potential': -90},
+                'klt': {'cond_label': 'gbar',
+                        'ion': 'k',
+                        'mechanism': 'mathews_klt',
+                        'reversal_potential': -90},
+                'leak': {'cond_label': 'gbar',
+                        'ion': None,
+                        'mechanism': 'leak',
+                        'reversal_potential': -70},
+                'na': {'cond_label': 'gbar',
+                        'ion': 'na',
+                        'mechanism': 'scott_na',
+                        'reversal_potential': 69}},
+    'conductances': {'cais': {'hcn': 0.002,
+                            'klt': 0.155,
+                            'leak': 5e-05,
+                            'na': 0.25},
+                    'dendrite': {'hcn': 0.001,
+                                'kht': 0.00055,
+                                'klt': 0.02,
+                                'leak': 5e-05,
+                                'na': 0},
+                    'internode': {'leak': 2e-05},
+                    'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
+                    'soma': {'hcn': 0.001,
+                            'kht': 0.00055,
+                            'klt': 0.04,
+                            'leak': 5e-05,
+                            'na': 0.03},
+                    'tais': {'hcn': 0.002,
+                            'klt': 0.155,
+                            'leak': 5e-05,
+                            'na': 0.25}},
+    'general': {'logging_level': 'ERROR'},
+    'initialization': {'Ra': 150,
+                    'cm': 0.9,
+                    'compartment_size': 2,
+                    'filopodia_maximum_diameter': 0.5,
+                    'filopodia_maximum_length': 15,
+                    'internode_cm': 0.0111,
+                    'stabilization_time': 100}}
+```
+
 </details>
