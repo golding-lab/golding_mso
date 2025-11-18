@@ -1,12 +1,15 @@
-<p align=center> <image  src="readme_files/160106_04_itd.gif" alt="Animated ITD simulation" height=300> </p>
+# GoldingMSO 
+---
 
-# <p align=center > GoldingMSO </p>
+![ITD Visualization](/readme_files/160106_04_itd_resize.gif) 
 
-<p align=center> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue" href="https://golding-mso.readthedocs.io/en/latest/"> </p>
-
-<p align=center>
 Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT Austin for compartmental modeling MSO neurons, using the simulation software, <a href="https://www.neuron.yale.edu/neuron/">NEURON</a>
-</p>
+
+<br>
+
+<img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue" href="https://golding-mso.readthedocs.io/en/latest/">
+
+
 
 ## Features
 
@@ -50,9 +53,9 @@ pip install .
 
 
 <details> 
-        <summary> 
-                 <h1 style="display:inline"> Demo </h1>
-        </summary>
+<summary> 
+                <h1 style="display:inline"> Demo </h1>
+</summary>
         
 
 ## Loading cells
