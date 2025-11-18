@@ -1,5 +1,4 @@
 # GoldingMSO 
----
 
 ![ITD Visualization](/readme_files/160106_04_itd_resize.gif) 
 
@@ -7,7 +6,7 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 <br>
 
-<img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue" href="https://golding-mso.readthedocs.io/en/latest/">
+<a href="https://golding-mso.readthedocs.io/en/latest/"> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue"> </a>
 
 
 
@@ -52,10 +51,9 @@ pip install .
 <br>
 
 
+## Demo
 <details> 
-<summary> 
-                <h1 style="display:inline"> Demo </h1>
-</summary>
+<summary> </summary>
         
 
 ## Loading cells

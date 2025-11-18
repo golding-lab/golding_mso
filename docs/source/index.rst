@@ -2,10 +2,8 @@
    :parser: myst_parser.sphinx_
 
 .. toctree::
-   :caption: Home:
-   :titlesonly:
 
-   readme
+   Home <readme>
 
 .. toctree::
    :caption: Modules:
