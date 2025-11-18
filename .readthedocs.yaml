@@ -9,6 +9,10 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.13"
+  jobs:
+    pre_create_environment:
+      - cp $READTHEDOCS_REPOSITORY_PATH/readme.md $READTHEDOCS_REPOSITORY_PATH/docs/source/readme.md
+      - cp -r $READTHEDOCS_REPOSITORY_PATH/readme_files $READTHEDOCS_REPOSITORY_PATH/docs/source/readme_files
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:

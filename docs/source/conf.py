@@ -6,8 +6,6 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../golding_mso/'))
-sys.path.insert(0, os.path.abspath('../../readme.md'))
-sys.path.insert(0, os.path.abspath('../../readme_files/'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -32,7 +30,6 @@ autodoc_typehints = 'description'
 autodoc_default_options = {'show-inheritance':False}
 autodoc_typehints_description_target='documented'
 autoclass_content='both'
-html_extra_path=['../../readme_files', '../../readme.md']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'restructuredtext',
