@@ -30,6 +30,7 @@ autodoc_typehints = 'description'
 autodoc_default_options = {'show-inheritance':False}
 autodoc_typehints_description_target='documented'
 autoclass_content='both'
+html_extra_path=['readme_files']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'restructuredtext',
