@@ -48,9 +48,12 @@ pip install .
 
 <br>
 
-# Demo
-<details>
-<summary> </summary>
+
+<details> 
+        <summary> 
+                 <h1 style="display:inline"> Demo </h1>
+        </summary>
+        
 
 ## Loading cells
 
