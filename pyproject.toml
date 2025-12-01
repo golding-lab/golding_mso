@@ -30,3 +30,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
 
+[tool.marimo.runtime]
+pythonpath = ["src"]
+

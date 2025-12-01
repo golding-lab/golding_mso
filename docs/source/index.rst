@@ -22,3 +22,4 @@
    :name: general
    
    genindex
+   privindex
