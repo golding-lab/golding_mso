@@ -41,15 +41,3 @@ source_suffix = {
 
 html_theme = 'furo'
 html_static_path = ['_static']
-
-def hide_non_private(app, what, name, obj, skip, options):
-    # if private-members is set, show only private members
-    if 'private-members' in options and not name.startswith('_'):
-        # skip public methods
-        return True
-    else:
-        # do not modify skip - private methods will be shown
-        return None
-
-def setup(app):
-    app.connect('autodoc-skip-member', hide_non_private)
