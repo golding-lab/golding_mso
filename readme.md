@@ -56,7 +56,7 @@ pip install .
 <summary> </summary>
         
 
-## Loading cells
+### Loading cells
 
 ```python
 import golding_mso as gmso
@@ -158,7 +158,7 @@ ps.plot(fig)
     
 
 
-## Changing cell parameters
+### Changing cell parameters
 
 
 
@@ -188,7 +188,7 @@ Modifying KHT channel mechanism and KLT conductance...
 Updated resting potential: -65.39322834144977 mV
 ```
 
-## Current injection
+### Current injection
 
 
 
@@ -235,7 +235,7 @@ plt.show()
     
 
 
-## Propagation testing
+### Propagation testing
 
 
 
@@ -277,7 +277,7 @@ Text(0, 0.5, 'Propagation Delay (ms)')
     
 
 
-## ITD testing
+### ITD testing
 
 
 
@@ -307,7 +307,7 @@ plt.show()
     
 ![ITD tuning curve](/readme_files/demo_15_0.png)
     
-## Editing config
+### Editing config
 
 ```python
 from golding_mso import get_config, set_config, reset_config
