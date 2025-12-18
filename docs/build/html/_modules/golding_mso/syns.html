@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>golding_mso.syns &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">golding_mso.syns</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for golding_mso.syns</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides classes and functions for creating and managing synaptic units (Exp2Syn, Netcon &amp; Netstim)</span>
+<span class="sd">in NEURON simulations, including random and path-based innervation of cell sections.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">neuron</span> <span class="kn">import</span> <span class="n">h</span>
+<span class="kn">from</span> <span class="nn">.nrn_types</span> <span class="kn">import</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">Exp2Syn</span><span class="p">,</span> <span class="n">NetCon</span><span class="p">,</span> <span class="n">NetStim</span>
+<span class="kn">from</span> <span class="nn">.cell</span> <span class="kn">import</span> <span class="n">Cell</span>
+<span class="kn">from</span> <span class="nn">.cell_calc</span> <span class="kn">import</span> <span class="n">tiplist</span><span class="p">,</span> <span class="n">parentlist</span><span class="p">,</span> <span class="n">section_list_length</span>
+
+
+
+
+<div class="viewcode-block" id="SynapseUnit">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit">[docs]</a>
+<span class="k">class</span> <span class="nc">SynapseUnit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a synaptic unit consisting of a Exp2Syn, NetStim, and NetCon on a given segment.</span>
+<span class="sd">    Handles creation and management of synaptic parameters and firing probability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">:</span> <span class="n">Segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a SynapseUnit on a given segment. </span>
+<span class="sd">        A Synapse consists of an Exp2Syn synapse, a NetStim for stimulation, and a NetCon to connect them.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        segment : Segment </span>
+<span class="sd">            The NEURON segment to place the synapse on.</span>
+<span class="sd">        \**kwargs: </span>
+<span class="sd">            Optional parameters for synapse and stimulation properties.</span>
+<span class="sd">            firing_probability (float): Probability the synapse will fire (default 1.0).</span>
+<span class="sd">            start (float): Start time for NetStim (default 0).</span>
+<span class="sd">            tau1, tau2, e, number, interval, noise, gmax, delay: Passed to respective NEURON objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment</span> <span class="o">=</span> <span class="n">segment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing_probability</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;firing_probability&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Create NEURON objects for this synapse unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_syn</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netstim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_netstim</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netcon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_netcon</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SynapseUnit.create_syn">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit.create_syn">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_syn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Exp2Syn</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and configure an Exp2Syn synapse on the segment.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        \**kwargs:</span>
+<span class="sd">            tau1, tau2, e (optional synaptic parameters).</span>
+<span class="sd">       </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Exp2Syn: </span>
+<span class="sd">            The created synapse object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Exp2Syn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">segment</span><span class="p">)</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">)</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">)</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">syn</span></div>
+
+
+<div class="viewcode-block" id="SynapseUnit.create_netstim">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit.create_netstim">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_netstim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NetStim</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and configure a NetStim for this synapse.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        \**kwargs:</span>
+<span class="sd">            number, interval, noise (optional stimulation parameters).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NetStim: </span>
+<span class="sd">            The created NetStim object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">netstim</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetStim</span><span class="p">()</span>
+        <span class="n">netstim</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">netstim</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;interval&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">netstim</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;noise&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Determine if this synapse will fire based on probability</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_probability</span>
+        <span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">netstim</span></div>
+
+
+<div class="viewcode-block" id="SynapseUnit.create_netcon">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit.create_netcon">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_netcon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NetCon</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and configure a NetCon connecting NetStim to the synapse.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        \**kwargs:</span>
+<span class="sd">            gmax (weight), delay (optional connection parameters).</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NetCon: </span>
+<span class="sd">            The created NetCon object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">netcon</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetCon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">netstim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">syn</span><span class="p">)</span>
+        <span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gmax&quot;</span><span class="p">,</span> <span class="mf">0.037</span><span class="p">)</span>
+        <span class="n">netcon</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">netcon</span></div>
+
+
+<div class="viewcode-block" id="SynapseUnit.reroll_firing">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit.reroll_firing">[docs]</a>
+    <span class="k">def</span> <span class="nf">reroll_firing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reroll the firing probability of the synapse unit and update NetStim start time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        \**kwargs:</span>
+<span class="sd">            firing_probability (float, optional): New probability to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing_probability</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span>
+            <span class="s2">&quot;firing_probability&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_probability</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_probability</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a string representation of the SynapseUnit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Synapse @ </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">segment</span><span class="si">}</span><span class="s2"> on section </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="SynapseUnit.destroy">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.SynapseUnit.destroy">[docs]</a>
+    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Destroy the synapse unit by deleting the synapse, netstim, and netcon objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">syn</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">netstim</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">netcon</span></div>
+</div>
+
+
+<div class="viewcode-block" id="innervate_total">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.innervate_total">[docs]</a>
+<span class="k">def</span> <span class="nf">innervate_total</span><span class="p">(</span><span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SynapseUnit</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create SynapseUnits for every segment in the provided list of sections.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section_list : list[Section]</span>
+<span class="sd">        List of NEURON Section objects.</span>
+<span class="sd">    \**kwargs: </span>
+<span class="sd">        Passed to SynapseUnit constructor.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[SynapseUnit]: </span>
+<span class="sd">        List of created SynapseUnit objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syn_units</span> <span class="o">=</span> <span class="n">innervate_points</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">seg</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">syn_units</span></div>
+
+
+
+<div class="viewcode-block" id="innervate_points">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.innervate_points">[docs]</a>
+<span class="k">def</span> <span class="nf">innervate_points</span><span class="p">(</span><span class="o">*</span><span class="n">segments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Segment</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SynapseUnit</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create SynapseUnits for each provided segment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    \*segments : list[Segment]</span>
+<span class="sd">        Segments to innervate.</span>
+<span class="sd">    \**kwargs: </span>
+<span class="sd">        Passed to SynapseUnit constructor.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[SynapseUnit]: </span>
+<span class="sd">        List of created SynapseUnit objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+        <span class="n">synapse_unit</span> <span class="o">=</span> <span class="n">create_synunit</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">units</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synapse_unit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">units</span></div>
+
+
+
+<div class="viewcode-block" id="innervate_random">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.innervate_random">[docs]</a>
+<span class="k">def</span> <span class="nf">innervate_random</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">numgroups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">numsyns</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">synspace</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">SynapseUnit</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly innervate a cell with groups of SynapseUnits along random paths.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell to innervate.</span>
+<span class="sd">    section_list : list[Section]</span>
+<span class="sd">        List of NEURON Section objects.</span>
+<span class="sd">    numgroups : int</span>
+<span class="sd">        Number of synapse groups to create.</span>
+<span class="sd">    numsyns : int</span>
+<span class="sd">        Number of synapses per group.</span>
+<span class="sd">    synspace : float</span>
+<span class="sd">        Minimum spacing between synapses.</span>
+<span class="sd">    \**kwargs:</span>
+<span class="sd">        Passed to SynapseUnit constructor.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[list[SynapseUnit]]:</span>
+<span class="sd">        List of groups, each a list of SynapseUnit objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">synapse_groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">group_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numgroups</span><span class="p">):</span>
+        <span class="n">ends</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tiplist</span><span class="p">(</span><span class="n">section_list</span><span class="p">))</span>
+        <span class="n">random_end</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ends</span><span class="p">)</span>
+        <span class="c1"># Ensure the chosen path is long enough for the desired number of synapses</span>
+        <span class="k">while</span> <span class="p">(</span>
+            <span class="n">section_list_length</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">parentlist</span><span class="p">(</span><span class="n">random_end</span><span class="p">,</span> <span class="n">starts_from_soma</span><span class="o">=</span><span class="kc">False</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="o">&lt;</span> <span class="n">numsyns</span> <span class="o">*</span> <span class="n">synspace</span>
+        <span class="p">):</span>
+            <span class="n">random_end</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ends</span><span class="p">)</span>
+        <span class="n">chosen_path_sections</span> <span class="o">=</span> <span class="n">parentlist</span><span class="p">(</span><span class="n">random_end</span><span class="p">,</span> <span class="n">starts_from_soma</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Pick a random length along the path</span>
+        <span class="n">random_length_on_path</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="n">section_list_length</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chosen_path_sections</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">while</span> <span class="n">random_length_on_path</span> <span class="o">&lt;</span> <span class="n">numsyns</span> <span class="o">*</span> <span class="n">synspace</span><span class="p">:</span>
+            <span class="n">random_length_on_path</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                <span class="mi">0</span><span class="p">,</span> <span class="n">section_list_length</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">chosen_path_sections</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">chosen_length_on_path</span> <span class="o">=</span> <span class="n">random_length_on_path</span>
+        <span class="n">chosen_path_lengths</span> <span class="o">=</span> <span class="n">section_list_length</span><span class="p">(</span>
+            <span class="n">cell</span><span class="p">,</span> <span class="n">chosen_path_sections</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Determine the locations for synapse placement</span>
+        <span class="n">lengths_to_place</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="n">chosen_length_on_path</span> <span class="o">-</span> <span class="p">(</span><span class="n">synspace</span> <span class="o">*</span> <span class="n">numsyns</span><span class="p">),</span>
+            <span class="n">chosen_length_on_path</span><span class="p">,</span>
+            <span class="n">numsyns</span><span class="p">,</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">segments_for_placement</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">lengths_to_place</span><span class="p">:</span>
+            <span class="n">length_total</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">section</span><span class="p">,</span> <span class="n">section_length</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">chosen_path_sections</span><span class="p">,</span> <span class="n">chosen_path_lengths</span>
+            <span class="p">):</span>
+                <span class="n">length_total</span> <span class="o">+=</span> <span class="n">section_length</span>
+                <span class="k">if</span> <span class="n">length_total</span> <span class="o">&gt;</span> <span class="n">length</span><span class="p">:</span>
+                    <span class="c1"># Find the segment at the correct location along the section</span>
+                    <span class="n">segment</span> <span class="o">=</span> <span class="n">section</span><span class="p">((</span><span class="n">length_total</span> <span class="o">-</span> <span class="n">length</span><span class="p">)</span> <span class="o">/</span> <span class="n">section</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>
+                    <span class="n">segments_for_placement</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="n">synapse_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">innervate_points</span><span class="p">(</span><span class="o">*</span><span class="n">segments_for_placement</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">synapse_groups</span></div>
+
+
+<span class="c1">#TODO Replace with SynapseUnit functionality</span>
+<div class="viewcode-block" id="syn_path_place">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.syn_path_place">[docs]</a>
+<span class="k">def</span> <span class="nf">syn_path_place</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">locations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">tau1</span><span class="o">=</span><span class="mf">0.270</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="mf">0.271</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+
+    <span class="n">lengtharray</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">synlist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>  <span class="c1"># record each length of each section</span>
+        <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">:</span>
+            <span class="n">lengtharray</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">L</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># cutting soma in half, to keep on one side</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lengtharray</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">locations</span><span class="p">:</span>
+        <span class="n">sectioncount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lengthcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">sectionindex</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">loconsec</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># move along the length of the path until section and relative location are found</span>
+        <span class="k">for</span> <span class="n">length</span> <span class="ow">in</span> <span class="n">lengtharray</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">length</span> <span class="o">+</span> <span class="n">lengthcount</span> <span class="o">&gt;</span> <span class="n">loc</span><span class="p">:</span>
+                <span class="n">sectionindex</span> <span class="o">=</span> <span class="n">sectioncount</span>
+                <span class="n">loconsec</span> <span class="o">=</span> <span class="n">loc</span> <span class="o">-</span> <span class="n">lengthcount</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sectioncount</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">lengthcount</span> <span class="o">+=</span> <span class="n">length</span>
+        <span class="n">syn</span> <span class="o">=</span> <span class="n">SynapseUnit</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">section_list</span><span class="p">)[</span><span class="n">sectionindex</span><span class="p">](</span>
+                <span class="n">loconsec</span> <span class="o">/</span> <span class="nb">list</span><span class="p">(</span><span class="n">section_list</span><span class="p">)[</span><span class="n">sectionindex</span><span class="p">]</span><span class="o">.</span><span class="n">L</span>
+            <span class="p">),</span>
+            <span class="n">tau1</span><span class="o">=</span><span class="n">tau1</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="n">tau2</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="c1"># syn = h.Exp2Syn(</span>
+        <span class="c1">#     list(section_list)[sectionindex](</span>
+        <span class="c1">#         loconsec / list(section_list)[sectionindex].L</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># )  # place syn</span>
+        <span class="c1"># syn.tau1 = tau1</span>
+        <span class="c1"># syn.tau2 = tau2</span>
+        <span class="c1"># syn.e = e</span>
+        <span class="n">synlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syn</span><span class="p">)</span>
+
+        <span class="n">syn</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">synlist</span></div>
+
+
+<div class="viewcode-block" id="create_synunit">
+<a class="viewcode-back" href="../../syns.html#golding_mso.syns.create_synunit">[docs]</a>
+<span class="k">def</span> <span class="nf">create_synunit</span><span class="p">(</span><span class="n">segment</span><span class="p">:</span> <span class="n">Segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseUnit</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to create a SynapseUnit on a given segment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    segment : Segment</span>
+<span class="sd">        The NEURON segment to place the synapse on.</span>
+<span class="sd">    \**kwargs: </span>
+<span class="sd">        Passed to SynapseUnit constructor.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SynapseUnit: </span>
+<span class="sd">        The created SynapseUnit object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SynapseUnit</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

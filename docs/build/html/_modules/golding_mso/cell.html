@@ -1,0 +1,1219 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>golding_mso.cell &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">golding_mso.cell</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for golding_mso.cell</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module defines the Cell class for loading and manipulating neuronal morphologies in NEURON.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span> <span class="nn">neuron</span> <span class="kn">import</span> <span class="n">h</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_config</span>
+
+<span class="n">dill_import</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dill</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">dill_import</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">h</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s2">&quot;stdrun.hoc&quot;</span><span class="p">)</span>
+<span class="n">h</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s2">&quot;import3d.hoc&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ParamDict">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.ParamDict">[docs]</a>
+<span class="k">class</span> <span class="nc">ParamDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dictionary-like class that resets cell properties when cell attributes are changed,</span>
+<span class="sd">    to force reevaluating old cell measurements with previous attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dict</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_dict</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">_reset_properties</span><span class="p">()</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="s2">&quot;channels_assigned&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reassigning channels after changing </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">item</span>
+
+<div class="viewcode-block" id="ParamDict.convert_to_dict">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.ParamDict.convert_to_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary representation of the ParamDict, recursively if necessary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ParamDict</span><span class="p">):</span>
+                <span class="n">tmp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">convert_to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">tmp</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__dict__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary representation of the ParamDict.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_dict</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="Cell">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell">[docs]</a>
+<span class="k">class</span> <span class="nc">Cell</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a neuron cell loaded from a morphology file, with methods for simulation and analysis in NEURON.</span>
+
+<span class="sd">    Example usage:</span>
+<span class="sd">    ::</span>
+<span class="sd">    </span>
+<span class="sd">        import golding_mso as gmso</span>
+<span class="sd">        import matplotlib.pyplot as plt</span>
+<span class="sd">        from neuron import h</span>
+
+<span class="sd">        mso_cell = gmso.Cell(gmso.morphologies[&#39;151124_03&#39;])</span>
+<span class="sd">        mso_cell.assign_channels()</span>
+<span class="sd">        mso_cell.attach_axon()</span>
+
+<span class="sd">        stim = h.IClamp(mso_cell.somatic[0](0.5))</span>
+<span class="sd">        stim.amp = 1.3</span>
+<span class="sd">        stim.dur = 10</span>
+<span class="sd">        stim.delay = 10</span>
+
+<span class="sd">        soma_v = h.Vector().record(mso_cell.somatic[0](0.5)._ref_v)</span>
+<span class="sd">        axon_v = h.Vector().record(mso_cell.nodes[-1](0.5)._ref_v)</span>
+<span class="sd">        t = h.Vector().record(h._ref_t)</span>
+
+<span class="sd">        h.finitialize(-58)</span>
+<span class="sd">        h.continuerun(10)</span>
+<span class="sd">        h.frecord_init()</span>
+<span class="sd">        h.continuerun(13)</span>
+
+<span class="sd">        plt.plot(t, soma_v, label=&#39;Soma&#39;, color=&#39;blue&#39;)</span>
+<span class="sd">        plt.plot(t, axon_v, label=&#39;Axon&#39;, color=&#39;orange&#39;)</span>
+<span class="sd">        plt.xlabel(&#39;Time (ms)&#39;)</span>
+<span class="sd">        plt.ylabel(&#39;Membrane Potential (mV)&#39;)</span>
+<span class="sd">        plt.title(&#39;MSO Cell Response to Current Injection&#39;)</span>
+<span class="sd">        plt.legend()</span>
+<span class="sd">        plt.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cell_file : str</span>
+<span class="sd">            Filepath to a morphology file in .asc format from Neurolucida.</span>
+<span class="sd">        config_path : str, optional</span>
+<span class="sd">            Overrides configuration with a custom config file path. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_default_values</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_cell</span><span class="p">(</span><span class="n">cell_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string representation of the Cell instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Cell(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_name</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+
+    <span class="c1"># TODO decide if this should be public</span>
+    <span class="k">def</span> <span class="nf">_assign_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts ion channels and sets their properties on specified parts of the cell,</span>
+<span class="sd">        based on the current cell instance&#39;s &#39;channels&#39; attribute (ParamDict).</span>
+<span class="sd">        kwargs input are formatted as part_channel_condlabel: conductancevalue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parts_lookup</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;dendrite&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;dendrites&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;soma&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;somatic&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nodes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;internode&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;internodes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;tais&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tais&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+            <span class="s2">&quot;cais&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;cais&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)],</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">parts_lookup</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Part &#39;</span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">&#39; not found in the cell. Available parts: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">parts_lookup</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">parts_lookup</span><span class="p">[</span><span class="n">part</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accessed_section</span> <span class="o">=</span> <span class="n">sec</span>
+                <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conductances</span><span class="p">[</span><span class="n">part</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Inserting channel &#39;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&#39; with mechanism &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s1">&#39;mechanism&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; to section </span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="n">sec</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;mechanism&quot;</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;ion&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">setattr</span><span class="p">(</span>
+                            <span class="n">sec</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">&quot;e</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s1">&#39;ion&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;reversal_potential&quot;</span><span class="p">],</span>
+                        <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">accessed_segment</span> <span class="o">=</span> <span class="n">seg</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Setting channel conductance, </span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">, to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">conductances</span><span class="p">[</span><span class="n">part</span><span class="p">][</span><span class="n">channel</span><span class="p">]</span><span class="si">}</span><span class="s2"> for section </span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="si">}</span><span class="s2"> at segment </span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_channel_cond</span><span class="p">(</span>
+                            <span class="n">seg</span><span class="p">,</span>
+                            <span class="n">channel</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;mechanism&quot;</span><span class="p">],</span>
+                            <span class="n">part</span><span class="p">,</span>
+                            <span class="n">cond_label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="s2">&quot;cond_label&quot;</span><span class="p">],</span>
+                            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="nb">setattr</span><span class="p">(</span>
+                                <span class="nb">getattr</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="s2">&quot;leak&quot;</span><span class="p">][</span><span class="s2">&quot;mechanism&quot;</span><span class="p">]),</span>
+                                <span class="s2">&quot;e&quot;</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">[</span><span class="s2">&quot;leak&quot;</span><span class="p">][</span><span class="s2">&quot;reversal_potential&quot;</span><span class="p">],</span>
+                            <span class="p">)</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels_assigned</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_create_axon_sections</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">num_nodes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tais_max_diam</span><span class="o">=</span><span class="mf">1.64</span><span class="p">,</span> <span class="n">cais_diam</span><span class="o">=</span><span class="mf">0.66</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tais</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Section</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tais&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="o">.</span><span class="n">nseg</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">15</span>
+        <span class="k">for</span> <span class="n">segnum</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="p">):</span>
+            <span class="c1"># tapering initial segment</span>
+            <span class="n">seg</span><span class="o">.</span><span class="n">diam</span> <span class="o">=</span> <span class="n">tais_max_diam</span> <span class="o">-</span> <span class="p">(</span>
+                <span class="p">((</span><span class="n">segnum</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="o">.</span><span class="n">nseg</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tais_max_diam</span> <span class="o">-</span> <span class="n">cais_diam</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cais</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Section</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;cais&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="o">.</span><span class="n">nseg</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="o">.</span><span class="n">diam</span> <span class="o">=</span> <span class="mf">0.66</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tais</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cais</span><span class="p">)</span>
+        <span class="c1"># creating and attaching node/internode pairs (default is 5)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">internodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ax_part_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">):</span>
+            <span class="n">internode</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Section</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;internode_</span><span class="si">{</span><span class="n">ax_part_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">internode</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">100</span>
+            <span class="n">internode</span><span class="o">.</span><span class="n">diam</span> <span class="o">=</span> <span class="mf">0.98</span>
+            <span class="n">internode</span><span class="o">.</span><span class="n">cm</span> <span class="o">=</span> <span class="mf">0.0111</span>  <span class="c1"># myelination</span>
+            <span class="n">internode</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">internodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">internode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internodes</span><span class="p">[</span><span class="n">ax_part_num</span><span class="p">])</span>
+
+            <span class="n">node</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Section</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;node_</span><span class="si">{</span><span class="n">ax_part_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">diam</span> <span class="o">=</span> <span class="mf">0.66</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internodes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_current_step_analysis</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">current_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">current_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">traces</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates membrane resistance, input resistance, and resting potential.</span>
+
+<span class="sd">        A current step is applied, and steady-state voltages are used to</span>
+<span class="sd">        calculate resistances.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        traces : bool, optional</span>
+<span class="sd">            Whether to return voltage and time traces. Default is False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        input_resistance : float</span>
+<span class="sd">            Input resistance in MΩ.</span>
+<span class="sd">        membrane_resistance : float</span>
+<span class="sd">            Membrane resistance in MΩ.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="n">current_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">current_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">current_step</span><span class="p">,</span> <span class="n">current_step</span>
+        <span class="p">)</span>  <span class="c1"># Current steps in nA</span>
+        <span class="n">steady_state_pots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">current_steps</span><span class="p">))</span>
+        <span class="n">peak_pots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">current_steps</span><span class="p">))</span>
+        <span class="n">time_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">voltage_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">probe</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">IClamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>  <span class="c1"># creation</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># duration (ms)</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span>  <span class="c1"># delay before input (ms)</span>
+        <span class="k">for</span> <span class="n">current_ind</span><span class="p">,</span> <span class="n">current_step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">current_steps</span><span class="p">):</span>
+
+            <span class="n">probe_current</span> <span class="o">=</span> <span class="n">current_step</span>  <span class="c1"># calculating current test level</span>
+            <span class="c1"># create and set current clamp</span>
+
+            <span class="n">probe</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="n">probe_current</span>  <span class="c1"># current level (nA)</span>
+
+            <span class="n">voltage_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+            <span class="n">time_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span>
+                <span class="n">voltage_vector</span><span class="p">,</span>
+                <span class="n">time_vector</span><span class="p">,</span>
+                <span class="n">sec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record_remove</span><span class="p">(</span><span class="n">voltage_vector</span><span class="p">)</span>
+            <span class="c1"># taking voltage measurement at steady state</span>
+            <span class="n">v_rest</span> <span class="o">=</span> <span class="n">voltage_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">steady_state_voltage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">voltage_vector</span><span class="p">)[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_vector</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">+</span> <span class="mi">75</span>
+            <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">peak_voltage</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">voltage_vector</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">steady_state_voltage</span> <span class="o">&gt;</span> <span class="n">v_rest</span>
+                <span class="k">else</span> <span class="n">steady_state_voltage</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">steady_state_pot</span> <span class="o">=</span> <span class="n">steady_state_voltage</span> <span class="o">-</span> <span class="n">v_rest</span>
+            <span class="n">peak_pot</span> <span class="o">=</span> <span class="n">peak_voltage</span> <span class="o">-</span> <span class="n">v_rest</span>
+            <span class="c1"># recording steadystate potential</span>
+
+            <span class="n">steady_state_pots</span><span class="p">[</span><span class="n">current_ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">steady_state_pot</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="p">)</span>
+            <span class="n">peak_pots</span><span class="p">[</span><span class="n">current_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">peak_pot</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">time_vectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time_vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">probe</span><span class="o">.</span><span class="n">delay</span><span class="p">)</span>
+            <span class="n">voltage_vectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">voltage_vector</span><span class="p">))</span>
+            <span class="k">del</span> <span class="p">(</span><span class="n">voltage_vector</span><span class="p">,</span> <span class="n">time_vector</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">probe</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="c1"># calculate line of best fit for resistance\\</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_resistance</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span>
+            <span class="n">current_steps</span><span class="p">,</span>
+            <span class="n">steady_state_pots</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peak_input_resistance</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span>
+            <span class="n">current_steps</span><span class="p">,</span>
+            <span class="n">peak_pots</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_membrane_resistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface_area</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_resistance</span> <span class="o">*</span> <span class="mi">100</span>
+
+        <span class="n">trace_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time_vectors</span><span class="p">,</span> <span class="s2">&quot;voltage&quot;</span><span class="p">:</span> <span class="n">voltage_vectors</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">traces</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trace_dict</span>
+
+    <span class="k">def</span> <span class="nf">_define_section_lists</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filopodia_maximum_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filopodia_maximum_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Categorizes NEURON sections into various SectionLists and culls filopodia.</span>
+
+<span class="sd">        SectionLists include somatic, lateral, medial, dendrites, and their</span>
+<span class="sd">        respective versions without filopodia (_nofilopodia).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        minimum_length : float</span>
+<span class="sd">            Minimum length (µm) of a section allowed before being deemed filopodia.</span>
+<span class="sd">        minimum_diameter : float</span>
+<span class="sd">            Minimum diameter (µm) of a section allowed before being deemed filopodia.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.cell_calc</span> <span class="kn">import</span> <span class="n">tiplist</span>
+
+        <span class="k">if</span> <span class="n">filopodia_maximum_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filopodia_maximum_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filopodia_maximum_length</span>
+        <span class="k">if</span> <span class="n">filopodia_maximum_diameter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filopodia_maximum_diameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filopodia_maximum_diameter</span>
+
+        <span class="c1"># apical &amp; dend label used to identify dendritic poles</span>
+        <span class="c1"># (labeled in Neurolucida)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">medial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dendrites</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">medial</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dendrites</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">medial_nofilopodia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">medial</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lateral_nofilopodia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lateral</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dendrites_nofilopodia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dendrites</span>
+
+        <span class="c1"># Iteratively remove sections classified as filopodia</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">deleted</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">tiplist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">allsec</span><span class="p">):</span>
+                <span class="c1"># Check if the section is too short and thin</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">sec</span><span class="o">.</span><span class="n">L</span> <span class="o">&lt;</span> <span class="n">filopodia_maximum_length</span>
+                    <span class="ow">and</span> <span class="n">sec</span><span class="o">.</span><span class="n">diam</span> <span class="o">&lt;</span> <span class="n">filopodia_maximum_diameter</span>
+                <span class="p">):</span>
+                    <span class="n">sec</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>  <span class="c1"># Electrically detach filopodia</span>
+                    <span class="c1"># Remove from all relevant SectionLists</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dendrites_nofilopodia</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dendrites_nofilopodia</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lateral_nofilopodia</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lateral_nofilopodia</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">medial_nofilopodia</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">medial_nofilopodia</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+                    <span class="n">deleted</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">deleted</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># Exit loop when no more filopodia are found</span>
+
+    <span class="c1"># TODO Check for possibility of 50% firiing (/if deterministic)</span>
+    <span class="c1"># TODO slow</span>
+    <span class="k">def</span> <span class="nf">_get_threshold</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">current_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+        <span class="n">relative_threshold_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+        <span class="n">numloop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">traces</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds the current threshold for action potential generation.</span>
+
+<span class="sd">        A current clamp is applied at the soma, and the minimum current</span>
+<span class="sd">        that generates an action potential is determined through binary search.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        current_range : tuple, optional</span>
+<span class="sd">            Range of current (in nanoamps) to search for threshold. Default is (0, 10).</span>
+<span class="sd">        relative_threshold_voltage : float, optional</span>
+<span class="sd">            Voltage increase (in mV) above resting potential to define a spike. Default is 25 mV.</span>
+<span class="sd">        numloop : int, optional</span>
+<span class="sd">            Maximum number of iterations for the binary search. Default is 20.</span>
+<span class="sd">        traces : bool, optional</span>
+<span class="sd">            Whether to record and return voltage traces. Default is False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        traces_dict : dict, optional</span>
+<span class="sd">            Dictionary containing traces if `traces` is True, otherwise None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;nodes&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No axon attached to the cell. Please attach an axon before finding the current threshold.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">clamp</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">IClamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">clamp</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span>
+        <span class="n">clamp</span><span class="o">.</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>  <span class="c1"># maximum NEURON sim time</span>
+        <span class="n">clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># start with no current</span>
+        <span class="n">ax_time_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">ax_voltage_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span>
+            <span class="n">ax_voltage_vector</span><span class="p">,</span>
+            <span class="n">ax_time_vector</span><span class="p">,</span>
+            <span class="n">sec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">soma_voltage_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">soma_time_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span>
+            <span class="n">soma_voltage_vector</span><span class="p">,</span>
+            <span class="n">soma_time_vector</span><span class="p">,</span>
+            <span class="n">sec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">max_depol_without_spike</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">traces_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">loop_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">spike_pair</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">spike_pair</span> <span class="o">!=</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">current_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+
+            <span class="n">clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="n">current</span>
+            <span class="n">traces_dict</span><span class="p">[</span><span class="n">current</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="mi">20</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">ax_voltage_vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">ax_voltage_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">&gt;</span> <span class="n">relative_threshold_voltage</span>
+            <span class="p">):</span>
+                <span class="n">spike_pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">spike_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">current_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">current</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spike_pair</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">spike_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">current_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">current_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">max_depol_without_spike</span>
+                    <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">ax_voltage_vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">ax_voltage_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">max_depol_without_spike</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="nb">max</span><span class="p">(</span><span class="n">soma_voltage_vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">soma_voltage_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+            <span class="p">(</span>
+                <span class="n">traces_dict</span><span class="p">[</span><span class="n">current</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;time_axon&quot;</span><span class="p">:</span> <span class="n">ax_time_vector</span><span class="o">.</span><span class="n">cl</span><span class="p">(),</span>
+                        <span class="s2">&quot;voltage_axon&quot;</span><span class="p">:</span> <span class="n">ax_voltage_vector</span><span class="o">.</span><span class="n">cl</span><span class="p">(),</span>
+                        <span class="s2">&quot;time_soma&quot;</span><span class="p">:</span> <span class="n">soma_time_vector</span><span class="o">.</span><span class="n">cl</span><span class="p">(),</span>
+                        <span class="s2">&quot;voltage_soma&quot;</span><span class="p">:</span> <span class="n">soma_voltage_vector</span><span class="o">.</span><span class="n">cl</span><span class="p">(),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">traces</span>
+                <span class="k">else</span> <span class="o">...</span>
+            <span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tested current: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> nA&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Spike pair: </span><span class="si">{</span><span class="n">current_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> nA: </span><span class="si">{</span><span class="n">spike_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">current_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> nA: </span><span class="si">{</span><span class="n">spike_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max depol. w/o spike (mV): </span><span class="si">{</span><span class="n">max_depol_without_spike</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">loop_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">loop_count</span> <span class="o">&gt;</span> <span class="n">numloop</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Maximum number of loops reached without convergence.&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record_remove</span><span class="p">(</span><span class="n">ax_voltage_vector</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record_remove</span><span class="p">(</span><span class="n">soma_voltage_vector</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rheobase</span> <span class="o">=</span> <span class="n">current_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_potential_threshold</span> <span class="o">=</span> <span class="n">max_depol_without_spike</span>
+        <span class="k">return</span> <span class="n">traces_dict</span> <span class="k">if</span> <span class="n">traces</span> <span class="k">else</span> <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_get_time_constant</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">traces</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Measures the time constant (tau) of the cell.</span>
+
+<span class="sd">        A current clamp is applied at the soma, and the return to resting</span>
+<span class="sd">        potential is used to calculate tau.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initv : float, optional</span>
+<span class="sd">            Initial voltage for the simulation. Default is -58.0 mV.</span>
+<span class="sd">        use_steady_state : bool, optional</span>
+<span class="sd">            Whether to use steady-state voltage for tau calculation. Default is False.</span>
+<span class="sd">        traces : bool, optional</span>
+<span class="sd">            Whether to return voltage and time traces. Default is False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tau : float</span>
+<span class="sd">            Time constant in milliseconds.</span>
+<span class="sd">        trace_dict : dict[str, Vector], optional</span>
+<span class="sd">            Dictionary containing time, voltage, and current vectors if traces is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Variable time step causes issues with this measurement</span>
+        <span class="c1"># (voltage change may be too small?)</span>
+        <span class="c1"># self.cvode.active(0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">active</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">time_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">voltage_vector</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span>
+            <span class="n">voltage_vector</span><span class="p">,</span>
+            <span class="n">time_vector</span><span class="p">,</span>
+            <span class="n">sec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">probe</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">IClamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01</span>
+
+        <span class="n">trace_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time_vector</span><span class="p">,</span>
+            <span class="s2">&quot;voltage&quot;</span><span class="p">:</span> <span class="n">voltage_vector</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">-</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">active</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">current_end_ind</span> <span class="o">=</span> <span class="n">time_vector</span><span class="o">.</span><span class="n">indwhere</span><span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">+</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span><span class="p">)</span>
+        <span class="n">current_stopped_voltage_vector</span> <span class="o">=</span> <span class="n">voltage_vector</span><span class="o">.</span><span class="n">c</span><span class="p">(</span><span class="n">current_end_ind</span><span class="p">)</span>
+        <span class="n">current_stopped_time_vector</span> <span class="o">=</span> <span class="n">time_vector</span><span class="o">.</span><span class="n">c</span><span class="p">(</span><span class="n">current_end_ind</span><span class="p">)</span>
+        <span class="n">max_voltage</span> <span class="o">=</span> <span class="n">current_stopped_voltage_vector</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">resting_voltage</span> <span class="o">=</span> <span class="n">voltage_vector</span><span class="p">[</span>
+            <span class="n">time_vector</span><span class="o">.</span><span class="n">indwhere</span><span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">+</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">]</span>
+        <span class="n">two_thirds_voltage</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_voltage</span> <span class="o">-</span> <span class="n">resting_voltage</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.63</span> <span class="o">+</span> <span class="n">resting_voltage</span>
+
+        <span class="n">two_thirds_voltage_ind</span> <span class="o">=</span> <span class="n">current_stopped_voltage_vector</span><span class="o">.</span><span class="n">indwhere</span><span class="p">(</span>
+            <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">two_thirds_voltage</span>
+        <span class="p">)</span>
+        <span class="n">time_at_two_thirds</span> <span class="o">=</span> <span class="n">current_stopped_time_vector</span><span class="p">[</span><span class="n">two_thirds_voltage_ind</span><span class="p">]</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;twothirdspotential&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">two_thirds_voltage</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;twothirdspoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_at_two_thirds</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;endprobepoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">+</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;depolpotential&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resting_voltage</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;maxpotential&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_voltage</span>
+        <span class="n">trace_dict</span><span class="p">[</span><span class="s2">&quot;maxpotentialtime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_vector</span><span class="p">[</span>
+            <span class="n">current_stopped_voltage_vector</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">time_at_two_thirds</span> <span class="o">-</span> <span class="p">(</span><span class="n">probe</span><span class="o">.</span><span class="n">delay</span> <span class="o">+</span> <span class="n">probe</span><span class="o">.</span><span class="n">dur</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_constant</span> <span class="o">=</span> <span class="n">tau</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">maxstep</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record_remove</span><span class="p">(</span><span class="n">voltage_vector</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">traces</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trace_dict</span>
+
+    <span class="k">def</span> <span class="nf">_get_resting_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs a simulation to determine the cell&#39;s resting potential.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        resting_potential : float</span>
+<span class="sd">            The resting potential in millivolts (mV).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">(</span><span class="o">-</span><span class="mf">60.1</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resting_potential</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record_remove</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the morphology file and instantiates the cell in NEURON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">CVode</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">active</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cell_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cell_file</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;cell_file must be a Path-like object representing the morphology file. Not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cell_file</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">cell_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="o">.</span><span class="n">stem</span>
+        <span class="n">morph_reader</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Import3d_Neurolucida3</span><span class="p">()</span>
+        <span class="n">morph_reader</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cell_file</span><span class="p">))</span>
+        <span class="n">i3d</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Import3d_GUI</span><span class="p">(</span><span class="n">morph_reader</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">i3d</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels_assigned</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_define_section_lists</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_compartments</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_load_default_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads default channel attributes and conductance values into the cell instance&#39;s attributes (conductances &amp; channels).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;initialization&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">cellchannels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]</span>
+        <span class="n">cellconductances</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;conductances&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conductances</span> <span class="o">=</span> <span class="n">ParamDict</span><span class="p">(</span><span class="n">cellconductances</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">ParamDict</span><span class="p">(</span><span class="n">cellchannels</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+
+    <span class="k">def</span> <span class="nf">_reset_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the cell&#39;s measured properties to None (usually when cell properties are changed).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_constant</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resting_potential</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_resistance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_membrane_resistance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_capacitance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rheobase</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_potential_threshold</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_set_channel_cond</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">mech</span><span class="p">,</span> <span class="n">part</span><span class="p">,</span> <span class="n">cond_label</span><span class="o">=</span><span class="s2">&quot;gbar&quot;</span><span class="p">,</span> <span class="n">input_cond</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="n">input_cond</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">cond_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conductances</span><span class="p">[</span><span class="n">part</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_cond</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dill_import</span><span class="p">:</span>
+                <span class="n">input_cond</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">input_cond</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">input_cond</span><span class="p">):</span>
+                    <span class="n">input_cond</span> <span class="o">=</span> <span class="n">input_cond</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;dill is not imported. Cannot compute conductance value function from bytes.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="nb">setattr</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">mech</span><span class="p">),</span>
+            <span class="n">cond_label</span><span class="p">,</span>
+            <span class="n">input_cond</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># replace with nonarg</span>
+
+    <span class="k">def</span> <span class="nf">_remove_from_neuron</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes the cell from NEURON simulation space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Remove all attributes from NEURON memory</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the cell&#39;s properties and removes it from NEURON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_compartments</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unassign_channels</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;channels_assigned&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assign_channels</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;dendrite&quot;</span><span class="p">,</span> <span class="s2">&quot;soma&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;axonal&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assign_channels</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="s2">&quot;internode&quot;</span><span class="p">,</span> <span class="s2">&quot;tais&quot;</span><span class="p">,</span> <span class="s2">&quot;cais&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_compartments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compartment_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the number of segments in each section based on the compartment size.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        compartment_size : float, optional</span>
+<span class="sd">            Size of each compartment in microns. Default is the class attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">compartment_size</span><span class="p">:</span>
+            <span class="n">compartment_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compartment_size</span>
+
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec</span><span class="p">:</span>
+            <span class="n">sec</span><span class="o">.</span><span class="n">Ra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ra</span>
+            <span class="n">sec</span><span class="o">.</span><span class="n">cm</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cm</span>
+                <span class="k">if</span> <span class="n">sec</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;internodes&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">internode_cm</span>
+            <span class="p">)</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">L</span>
+            <span class="n">seg_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">length</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">compartment_size</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dendrites</span><span class="p">:</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">nseg</span> <span class="o">=</span> <span class="n">seg_num</span>
+            <span class="k">elif</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">:</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">nseg</span> <span class="o">=</span> <span class="mi">3</span>
+
+    <span class="k">def</span> <span class="nf">_topology_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subtree</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">subtree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span>
+        <span class="n">topo_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">subtree_children</span> <span class="o">=</span> <span class="p">{</span><span class="n">sec</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">subtree</span><span class="p">())</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">subtree</span><span class="p">}</span>
+        <span class="n">sorted_children</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">subtree_children</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="n">curr_sec</span> <span class="o">=</span> <span class="n">sorted_children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">curr_sec</span><span class="o">.</span><span class="n">parentseg</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">curr_sec</span><span class="o">.</span><span class="n">parentseg</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">curr_sec</span> <span class="o">=</span> <span class="n">curr_sec</span><span class="o">.</span><span class="n">parentseg</span><span class="p">()</span><span class="o">.</span><span class="n">sec</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">curr_sec</span><span class="o">.</span><span class="n">L</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)):</span>
+                    <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;  &quot;</span>
+                <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;  &quot;</span>
+            <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;`&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;|&quot;</span>
+
+        <span class="n">curr_sec</span> <span class="o">=</span> <span class="n">sorted_children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">curr_sec</span><span class="o">.</span><span class="n">L</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)):</span>
+            <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;--&quot;</span>
+        <span class="n">topo_string</span> <span class="o">+=</span> <span class="s2">&quot;|   &quot;</span> <span class="o">+</span> <span class="n">curr_sec</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">subtree</span> <span class="o">=</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">subtree</span> <span class="k">if</span> <span class="n">sec</span> <span class="o">!=</span> <span class="n">curr_sec</span><span class="p">]</span>
+        <span class="n">next_up</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">section</span>
+            <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">subtree</span>
+            <span class="k">if</span> <span class="n">section</span><span class="o">.</span><span class="n">parentseg</span><span class="p">()</span><span class="o">.</span><span class="n">sec</span> <span class="o">==</span> <span class="n">curr_sec</span>
+            <span class="ow">or</span> <span class="n">section</span><span class="o">.</span><span class="n">parentseg</span><span class="p">()</span><span class="o">.</span><span class="n">sec</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subtree</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">next_up</span><span class="p">:</span>
+            <span class="n">new_subtree</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span>
+            <span class="n">topo_string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topology_to_string</span><span class="p">(</span><span class="n">subtree</span><span class="o">=</span><span class="n">new_subtree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">topo_string</span>
+
+<div class="viewcode-block" id="Cell.assign_channels">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.assign_channels">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts ion channels and sets their properties on specified parts of the cell,</span>
+<span class="sd">        based on the current cell instance&#39;s &#39;channels&#39; attribute (ParamDict).</span>
+<span class="sd">        kwargs input are formatted as part_channel_condlabel: conductancevalue.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Assigning channels to the cell sections.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;dendrite&quot;</span><span class="p">,</span> <span class="s2">&quot;soma&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;axonal&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;dendrite&quot;</span><span class="p">,</span> <span class="s2">&quot;soma&quot;</span><span class="p">,</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="s2">&quot;internode&quot;</span><span class="p">,</span> <span class="s2">&quot;tais&quot;</span><span class="p">,</span> <span class="s2">&quot;cais&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_channels</span><span class="p">(</span><span class="n">parts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Cell.attach_axon">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.attach_axon">[docs]</a>
+    <span class="k">def</span> <span class="nf">attach_axon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attaches an artificial axon to the soma of the Cell instance.</span>
+
+<span class="sd">        The axon morphology is based on Lehnert et al. (2014) and includes a</span>
+<span class="sd">        tapering initial segment, nodes, and internodes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_axon_sections</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assign_channels</span><span class="p">(</span><span class="n">parts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="s2">&quot;internode&quot;</span><span class="p">,</span> <span class="s2">&quot;tais&quot;</span><span class="p">,</span> <span class="s2">&quot;cais&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Cell.detach_axon">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.detach_axon">[docs]</a>
+    <span class="k">def</span> <span class="nf">detach_axon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disconnects the axon from the soma and removes it from the cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;axonal&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No axon attached to the cell.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axonal</span><span class="p">:</span>
+            <span class="n">sec</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+            <span class="k">del</span> <span class="n">sec</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__delattr__</span><span class="p">(</span><span class="s2">&quot;axonal&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_define_section_lists</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Cell.move">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.move">[docs]</a>
+    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">relative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Moves the cell to a new location in 3D space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float</span>
+<span class="sd">            distance to translate or (if relative = False) new x-coordinate.</span>
+<span class="sd">        y : float</span>
+<span class="sd">            distance to translate or (if relative = False) new y-coordinate.</span>
+<span class="sd">        z : float</span>
+<span class="sd">            distance to translate or (if relative = False) new z-coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">:</span>  <span class="c1"># Moving the root section moves all children as well</span>
+            <span class="n">rel_sec_point</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">x3d</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">sec</span><span class="o">.</span><span class="n">y3d</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">sec</span><span class="o">.</span><span class="n">z3d</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">n3d</span><span class="p">()):</span>
+                <span class="n">x3d</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">x3d</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+                <span class="n">y3d</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">y3d</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+                <span class="n">z3d</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">z3d</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+                <span class="n">diam3d</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">diam3d</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">relative</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">h</span><span class="o">.</span><span class="n">pt3dchange</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">x3d</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span> <span class="n">y3d</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="n">z3d</span> <span class="o">+</span> <span class="n">z</span><span class="p">,</span> <span class="n">diam3d</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="n">sec</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">h</span><span class="o">.</span><span class="n">pt3dchange</span><span class="p">(</span>
+                        <span class="n">pt</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">rel_sec_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x3d</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">rel_sec_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y3d</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">rel_sec_point</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">z3d</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span><span class="p">,</span>
+                        <span class="n">diam3d</span><span class="p">,</span>
+                        <span class="n">sec</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Cell.psection">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.psection">[docs]</a>
+    <span class="k">def</span> <span class="nf">psection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sections</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the section properties of the cell, or specific section(s)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sec : h.Section | list[h.Section], optional</span>
+<span class="sd">            The section(s) to get properties for. If None, returns properties for all sections.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary containing section properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">sections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">():</span> <span class="n">s</span><span class="o">.</span><span class="n">psection</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sections</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">sections</span><span class="p">]</span>
+            <span class="n">psections</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+                <span class="n">psections</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">sec</span><span class="p">:</span> <span class="n">sec</span><span class="o">.</span><span class="n">psection</span><span class="p">()})</span>
+            <span class="k">return</span> <span class="n">psections</span></div>
+
+
+<div class="viewcode-block" id="Cell.restore_state">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.restore_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">restore_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_state</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">object</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Restores the cell&#39;s mechanisms to a previously stored state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stored_cell_state&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cell_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cell_standards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stored_cell_state</span>
+        <span class="k">elif</span> <span class="n">cell_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No cell state provided. Please provide or store a cell state to restore one.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cell_standards</span> <span class="o">=</span> <span class="n">cell_state</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_standards</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cell standards and cell sections do not match. Did the previous cell change after storing its state (axon, add/remove section,etc.)? Run Cell.store_state() again to update the state.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">sec_standards</span><span class="p">,</span> <span class="n">sec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cell_standards</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">mech_standards</span> <span class="ow">in</span> <span class="n">sec_standards</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">seg</span><span class="p">,</span> <span class="n">mech_standard</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="n">mech_standards</span><span class="p">):</span>
+                    <span class="n">mech_standard</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO Test artificial resting potential function</span>
+<div class="viewcode-block" id="Cell.set_artificial_resting_potential">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.set_artificial_resting_potential">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_artificial_resting_potential</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">resting_potential</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">current_limits</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">current_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">current_override</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets an artificial resting potential with a measured indefinite current injection</span>
+<span class="sd">        at the soma.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        resting_potential : float</span>
+<span class="sd">            Desired artificial resting potential.</span>
+<span class="sd">        current_limits : tuple, optional</span>
+<span class="sd">            Range of DC current sweeping test in nanoamps. Default is (-1, 1).</span>
+<span class="sd">        current_step : float, optional</span>
+<span class="sd">            Increment of applied DC current in nanoamps. Default is 0.1.</span>
+<span class="sd">        current_override : float, optional</span>
+<span class="sd">            If provided, directly sets the current without sweeping.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">IClamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>  <span class="c1"># maximum NEURON sim time</span>
+        <span class="c1"># ensures dc current is constant throughout sim</span>
+        <span class="k">if</span> <span class="n">current_override</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="n">current_override</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">artificial_resting_potential</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">current_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="n">current_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">current_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">current_step</span><span class="p">,</span> <span class="n">current_step</span>
+        <span class="p">)</span>
+        <span class="n">closest_current</span> <span class="o">=</span> <span class="n">current_steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">closest_resting_potential</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># sweeping through current values</span>
+        <span class="k">for</span> <span class="n">current</span> <span class="ow">in</span> <span class="n">current_steps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="n">current</span>
+
+            <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stabilization_time</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="n">resting_potential</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span>
+                <span class="n">closest_resting_potential</span> <span class="o">-</span> <span class="n">resting_potential</span>
+            <span class="p">):</span>
+
+                <span class="n">closest_current</span> <span class="o">=</span> <span class="n">current</span>
+                <span class="n">closest_resting_potential</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">closest_resting_potential</span> <span class="o">-</span> <span class="n">resting_potential</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">artificial_potential_clamp</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="n">closest_current</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">artificial_resting_potential</span> <span class="o">=</span> <span class="n">closest_resting_potential</span></div>
+
+
+<div class="viewcode-block" id="Cell.store_state">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.store_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">store_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">object</span><span class="p">]]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stores the current state of all mechanisms in the cell for later restoration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cell_standards</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span><span class="p">:</span>
+            <span class="n">sec_standards</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">mech</span> <span class="ow">in</span> <span class="n">sec</span><span class="o">.</span><span class="n">psection</span><span class="p">()[</span><span class="s2">&quot;density_mechs&quot;</span><span class="p">]:</span>
+                <span class="n">mech_standards</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+                    <span class="n">ms</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">MechanismStandard</span><span class="p">(</span><span class="n">mech</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">ms</span><span class="o">.</span><span class="n">_in</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+                    <span class="n">mech_standards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ms</span><span class="p">)</span>
+                <span class="n">sec_standards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mech_standards</span><span class="p">)</span>
+            <span class="n">cell_standards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sec_standards</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stored_cell_state</span> <span class="o">=</span> <span class="n">cell_standards</span>
+        <span class="k">return</span> <span class="n">cell_standards</span></div>
+
+
+<div class="viewcode-block" id="Cell.topology">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.topology">[docs]</a>
+    <span class="k">def</span> <span class="nf">topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subtree</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prints the topology of the cell in a human-readable format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_topology_to_string</span><span class="p">(</span><span class="n">subtree</span><span class="o">=</span><span class="n">subtree</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Cell.unassign_channels">
+<a class="viewcode-back" href="../../cell.html#golding_mso.cell.Cell.unassign_channels">[docs]</a>
+    <span class="k">def</span> <span class="nf">unassign_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unassigns all channels from the cell, resetting it to its initial state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mech</span> <span class="ow">in</span> <span class="n">sec</span><span class="o">.</span><span class="n">psection</span><span class="p">()[</span><span class="s2">&quot;density_mechs&quot;</span><span class="p">]:</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">uninsert</span><span class="p">(</span><span class="n">mech</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels_assigned</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="c1"># TODO Check units to property docstrings</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_capacitance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        input_capacitance: float</span>
+<span class="sd">            The input capacitance (pF).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_input_capacitance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: input_capacitance&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_capacitance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface_area</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cm</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_capacitance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_resistance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        input_resistance : float</span>
+<span class="sd">            The input resistance (MΩ).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_input_resistance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: input_resistance&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_step_analysis</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_resistance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">membrane_resistance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        membrane_resistance : float</span>
+<span class="sd">            The membrane resistance (MΩ).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_membrane_resistance&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: membrane_resistance&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_step_analysis</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_membrane_resistance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">potential_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        potential_threshold: float</span>
+<span class="sd">            The maximum subthreshold depolarization (mV).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_potential_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: potential_threshold&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_threshold</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potential_threshold</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resting_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        resting_potential: float</span>
+<span class="sd">            The resting potential (mV).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_resting_potential&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: resting_potential&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_resting_potential</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resting_potential</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rheobase</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        rheobase: float</span>
+<span class="sd">            The current threshold (nA).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_rheobase&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: rheobase&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_threshold</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rheobase</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">surface_area</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        surface_area: float</span>
+<span class="sd">            The surface area in square micrometers (µm²).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_surface_area&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: surface_area&quot;</span><span class="p">)</span>
+            <span class="n">area</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="n">sec</span>
+                <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allsec_nofilopodia</span>
+                <span class="k">if</span> <span class="n">sec</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;axonal&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="p">]:</span>
+                <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+                    <span class="n">area</span> <span class="o">+=</span> <span class="n">seg</span><span class="o">.</span><span class="n">area</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_surface_area</span> <span class="o">=</span> <span class="n">area</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surface_area</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        time_constant: float</span>
+<span class="sd">            The measured cell&#39;s time constant (ms)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_time_constant&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Evaluating property: time_constant&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_time_constant</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_constant</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

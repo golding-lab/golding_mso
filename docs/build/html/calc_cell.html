@@ -1,0 +1,471 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cell_calc &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="math_calc" href="calc_math.html" />
+    <link rel="prev" title="GoldingMSO documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cell_calc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.average_path_length"><code class="docutils literal notranslate"><span class="pre">average_path_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.axon_length_along"><code class="docutils literal notranslate"><span class="pre">axon_length_along()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.axon_length_to_terminal"><code class="docutils literal notranslate"><span class="pre">axon_length_to_terminal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.closest_tip"><code class="docutils literal notranslate"><span class="pre">closest_tip()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.furthest_point"><code class="docutils literal notranslate"><span class="pre">furthest_point()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.get_all_input_lengths"><code class="docutils literal notranslate"><span class="pre">get_all_input_lengths()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.get_average_endpoints"><code class="docutils literal notranslate"><span class="pre">get_average_endpoints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.get_children_secs"><code class="docutils literal notranslate"><span class="pre">get_children_secs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.get_input_lengths"><code class="docutils literal notranslate"><span class="pre">get_input_lengths()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.getsegxyz"><code class="docutils literal notranslate"><span class="pre">getsegxyz()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.mep"><code class="docutils literal notranslate"><span class="pre">mep()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.parentlist"><code class="docutils literal notranslate"><span class="pre">parentlist()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.section_list_length"><code class="docutils literal notranslate"><span class="pre">section_list_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.surface_area"><code class="docutils literal notranslate"><span class="pre">surface_area()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell_calc.tiplist"><code class="docutils literal notranslate"><span class="pre">tiplist()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cell_calc</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/calc_cell.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-golding_mso.cell_calc">
+<span id="cell-calc"></span><h1>cell_calc<a class="headerlink" href="#module-golding_mso.cell_calc" title="Link to this heading"></a></h1>
+<p>This module provides functions for compartmental modeling and analysis of NEURON cell morphologies, including path length, surface area, and tip detection utilities.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.average_path_length">
+<span class="sig-name descname"><span class="pre">average_path_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#average_path_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.average_path_length" title="Link to this definition"></a></dt>
+<dd><p>Finds the average pathlength from all paths to the soma in the section list</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section_list: SectionList</dt><dd><p>list of sections to find paths to the soma within</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<p>average_path_length : float</p>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.axon_length_along">
+<span class="sig-name descname"><span class="pre">axon_length_along</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#axon_length_along"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.axon_length_along" title="Link to this definition"></a></dt>
+<dd><p>Calculates the length of the axon segment between two given segments. Equivalent to h.distance(seg_1, seg_2).</p>
+<section id="id1">
+<h2>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance containing the sections.</p>
+</dd>
+<dt>seg_1<span class="classifier">Segment</span></dt><dd><p>The starting segment of the axon path.</p>
+</dd>
+<dt>seg_2<span class="classifier">Segment</span></dt><dd><p>The ending segment of the axon path.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>axon_pathlength<span class="classifier">float</span></dt><dd><p>The calculated length of the axon segment between the two given segments.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.axon_length_to_terminal">
+<span class="sig-name descname"><span class="pre">axon_length_to_terminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plane'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#axon_length_to_terminal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.axon_length_to_terminal" title="Link to this definition"></a></dt>
+<dd><p>Calculates the length of the axon to the terminal segment.</p>
+<section id="id3">
+<h2>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance containing the sections.</p>
+</dd>
+<dt>seg<span class="classifier">Segment</span></dt><dd><p>The segment object for which to calculate the axon length to the terminal.</p>
+</dd>
+<dt>sectionlist<span class="classifier">SectionList</span></dt><dd><p>List of NEURON sections to analyze.</p>
+</dd>
+<dt>method<span class="classifier">str, optional</span></dt><dd><p>The method to use for calculation. Options are ‘plane’, ‘cartesian’, or ‘straight’. Default is ‘plane’.
+plane: Uses a defined distal perpendicular plane based on cell orientation and furthest segment.
+cartesian: Calculates the distance in Cartesian coordinates, assuming axon travels along one axis at a time.
+straight: Calculates the straight-line distance to the terminal segment, assuming a direct path.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>axon_length_to_terminal<span class="classifier">float</span></dt><dd><p>The calculated axon length to the terminal segment.</p>
+</dd>
+<dt>closest_endseg<span class="classifier">Segment</span></dt><dd><p>The closest terminal segment object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.closest_tip">
+<span class="sig-name descname"><span class="pre">closest_tip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#closest_tip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.closest_tip" title="Link to this definition"></a></dt>
+<dd><p>Returns the closest tip section’s terminal segment to a given segment in a section list.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.furthest_point">
+<span class="sig-name descname"><span class="pre">furthest_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#furthest_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.furthest_point" title="Link to this definition"></a></dt>
+<dd><p>Finds the furthest segment and its distance from the soma.</p>
+<section id="id5">
+<h2>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance to find the somatic compartment.</p>
+</dd>
+<dt>section_list<span class="classifier">SectionList</span></dt><dd><p>List of NEURON sections to analyze.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>furthest_distance<span class="classifier">float</span></dt><dd><p>Distance of the furthest segment from the soma.</p>
+</dd>
+<dt>furthest_seg<span class="classifier">Segment</span></dt><dd><p>The furthest segment object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.get_all_input_lengths">
+<span class="sig-name descname"><span class="pre">get_all_input_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_lists</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#get_all_input_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.get_all_input_lengths" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total length of all input paths in a cell.</p>
+<section id="id7">
+<h2>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance containing the sections.</p>
+</dd>
+<dt>sectionlist<span class="classifier">list, optional</span></dt><dd><p>A list of sections to consider. If None, uses all sections in the cell.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>float</dt><dd><p>The total length of all input paths.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.get_average_endpoints">
+<span class="sig-name descname"><span class="pre">get_average_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sectionlist_1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sectionlist_2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#get_average_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.get_average_endpoints" title="Link to this definition"></a></dt>
+<dd><p>Calculates the average coordinates of the terminal segments at the ends of the cell for use defining line parallel to cell orientation.</p>
+<section id="id9">
+<h2>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance containing the sections.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>tuple</dt><dd><p>Two tuples containing the average coordinates (x, y) of the lateral and medial terminal segments, respectively.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.get_children_secs">
+<span class="sig-name descname"><span class="pre">get_children_secs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#get_children_secs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.get_children_secs" title="Link to this definition"></a></dt>
+<dd><p>Returns a list of all child sections in the cell (recursively).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.get_input_lengths">
+<span class="sig-name descname"><span class="pre">get_input_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_lists</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#get_input_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.get_input_lengths" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total length of all input paths in a cell.</p>
+<section id="id11">
+<h2>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance containing the sections.</p>
+</dd>
+<dt>sectionlist<span class="classifier">list, optional</span></dt><dd><p>A list of sections to consider. If None, uses all sections in the cell.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h2>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>float</dt><dd><p>The total length of all input paths.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.getsegxyz">
+<span class="sig-name descname"><span class="pre">getsegxyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#getsegxyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.getsegxyz" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the 3D coordinates of a NEURON segment.</p>
+<section id="id13">
+<h2>Parameters<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>seg<span class="classifier">Segment</span></dt><dd><p>The NEURON segment to analyze.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h2>Returns<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>coords<span class="classifier">tuple</span></dt><dd><p>3D coordinates of the segment (x, y, z).</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.mep">
+<span class="sig-name descname"><span class="pre">mep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#mep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.mep" title="Link to this definition"></a></dt>
+<dd><p>Calculates the mean electrotonic pathlength (MEP).
+Uses paths to soma from each section in section_list.</p>
+<p>MEP calculation based on (van Elburg and van Ooyen, 2010).</p>
+<section id="id15">
+<h2>Parameters<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell: Cell</dt><dd><p>cell instance to pass along to pj()</p>
+</dd>
+<dt>section_list: SectionList</dt><dd><p>sections considered as ‘endpoints’ of a pathlength</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h2>Returns<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>mep<span class="classifier">float</span></dt><dd><p>calculated MEP value</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.parentlist">
+<span class="sig-name descname"><span class="pre">parentlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starts_from_soma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_soma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_section</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#parentlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.parentlist" title="Link to this definition"></a></dt>
+<dd><p>Retrieves all parent sections of a given section.</p>
+<section id="id17">
+<h2>Parameters<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section<span class="classifier">h.Section</span></dt><dd><p>The NEURON section to analyze.</p>
+</dd>
+<dt>starts_from_soma<span class="classifier">bool, optional</span></dt><dd><p>If True, the list starts from the soma. Default is True.</p>
+</dd>
+<dt>include_soma<span class="classifier">bool, optional</span></dt><dd><p>If True, includes the soma in the list. Default is False.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h2>Returns<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>parent_list<span class="classifier">SectionList</span></dt><dd><p>List of parent sections, including the original section.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.section_list_length">
+<span class="sig-name descname"><span class="pre">section_list_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#section_list_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.section_list_length" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total and individual lengths of sections in a list.</p>
+<section id="id19">
+<h2>Parameters<a class="headerlink" href="#id19" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance to check for somatic sections.</p>
+</dd>
+<dt>section_list<span class="classifier">SectionList</span></dt><dd><p>List of NEURON sections to analyze.</p>
+</dd>
+<dt>return_array<span class="classifier">bool, optional</span></dt><dd><p>If True, returns an array of individual section lengths. Default is True.</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h2>Returns<a class="headerlink" href="#id20" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>total_length<span class="classifier">float</span></dt><dd><p>Total length of all sections in the list.</p>
+</dd>
+<dt>length_array<span class="classifier">list, optional</span></dt><dd><p>Array of individual section lengths (if <cite>return_array</cite> is True).</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.surface_area">
+<span class="sig-name descname"><span class="pre">surface_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#surface_area"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.surface_area" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total surface area of all sections in a list.</p>
+<section id="id21">
+<h2>Parameters<a class="headerlink" href="#id21" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section_list<span class="classifier">SectionList</span></dt><dd><p>List of NEURON sections to analyze.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h2>Returns<a class="headerlink" href="#id22" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>area<span class="classifier">float</span></dt><dd><p>Total surface area of all sections.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.cell_calc.tiplist">
+<span class="sig-name descname"><span class="pre">tiplist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell_calc.html#tiplist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell_calc.tiplist" title="Link to this definition"></a></dt>
+<dd><p>Identifies all terminal sections in a given list.</p>
+<section id="id23">
+<h2>Parameters<a class="headerlink" href="#id23" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section_list<span class="classifier">list</span></dt><dd><p>List of NEURON sections to analyze.</p>
+</dd>
+</dl>
+</section>
+<section id="id24">
+<h2>Returns<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>end_sections<span class="classifier">list</span></dt><dd><p>List of terminal sections (sections with no children).</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="GoldingMSO documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="calc_math.html" class="btn btn-neutral float-right" title="math_calc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

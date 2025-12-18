@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>math_calc &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="cell" href="cell.html" />
+    <link rel="prev" title="cell_calc" href="calc_cell.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">math_calc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.define_xy_line"><code class="docutils literal notranslate"><span class="pre">define_xy_line()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.dist_from_line"><code class="docutils literal notranslate"><span class="pre">dist_from_line()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.distance3D"><code class="docutils literal notranslate"><span class="pre">distance3D()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.get_line_from_points"><code class="docutils literal notranslate"><span class="pre">get_line_from_points()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.perpendicular_distance_point_to_line"><code class="docutils literal notranslate"><span class="pre">perpendicular_distance_point_to_line()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.math_calc.perpendicular_distance_point_to_line_3d"><code class="docutils literal notranslate"><span class="pre">perpendicular_distance_point_to_line_3d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">math_calc</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/calc_math.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-golding_mso.math_calc">
+<span id="math-calc"></span><h1>math_calc<a class="headerlink" href="#module-golding_mso.math_calc" title="Link to this heading"></a></h1>
+<p>This module provides functions for geometric and mathematical calculations used in neuronal modeling.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.define_xy_line">
+<span class="sig-name descname"><span class="pre">define_xy_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/math_calc.html#define_xy_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.define_xy_line" title="Link to this definition"></a></dt>
+<dd><p>Defines a line in 3D space using two points and a third point to determine the plane.
+Returns the slope (m) and y-intercept (b) of the line in the x-y plane.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>point1<span class="classifier">tuple</span></dt><dd><p>Coordinates of the first point (x, y, z).</p>
+</dd>
+<dt>point2<span class="classifier">tuple</span></dt><dd><p>Coordinates of the second point (x, y, z).</p>
+</dd>
+<dt>point3<span class="classifier">tuple</span></dt><dd><p>Coordinates of the third point (x, y, z) used to define the plane.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>m<span class="classifier">float</span></dt><dd><p>Slope of the line in the x-y plane.</p>
+</dd>
+<dt>b<span class="classifier">float</span></dt><dd><p>Y-intercept of the line in the x-y plane.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.dist_from_line">
+<span class="sig-name descname"><span class="pre">dist_from_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/math_calc.html#dist_from_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.dist_from_line" title="Link to this definition"></a></dt>
+<dd><p>Calculates the distance from a point to a line defined by its slope and y-intercept.
+The line is defined in the x-y plane, and the point is a 2D point (x, y).</p>
+<section id="id1">
+<h2>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>line<span class="classifier">tuple</span></dt><dd><p>Slope (m) and y-intercept (b) of the line.</p>
+</dd>
+<dt>point<span class="classifier">tuple</span></dt><dd><p>Coordinates of the point (x, y).</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>distance<span class="classifier">float</span></dt><dd><p>Perpendicular distance from the point to the line.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.distance3D">
+<span class="sig-name descname"><span class="pre">distance3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/math_calc.html#distance3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.distance3D" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Euclidean distance between two 3D points.</p>
+<section id="id3">
+<h2>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>a<span class="classifier">tuple</span></dt><dd><p>Coordinates of the first point (x, y, z).</p>
+</dd>
+<dt>b<span class="classifier">tuple</span></dt><dd><p>Coordinates of the second point (x, y, z).</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>distance<span class="classifier">float</span></dt><dd><p>Euclidean distance between the two points.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.get_line_from_points">
+<span class="sig-name descname"><span class="pre">get_line_from_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/math_calc.html#get_line_from_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.get_line_from_points" title="Link to this definition"></a></dt>
+<dd><p>Calculate the slope and y-intercept of a line given two points.</p>
+<section id="id5">
+<h2>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>point1<span class="classifier">tuple</span></dt><dd><p>Coordinates of the first point (x, y).</p>
+</dd>
+<dt>point2<span class="classifier">tuple</span></dt><dd><p>Coordinates of the second point (x, y).</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>m<span class="classifier">float</span></dt><dd><p>Slope of the line.</p>
+</dd>
+<dt>b<span class="classifier">float</span></dt><dd><p>Y-intercept of the line.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.perpendicular_distance_point_to_line">
+<span class="sig-name descname"><span class="pre">perpendicular_distance_point_to_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/golding_mso/math_calc.html#perpendicular_distance_point_to_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.perpendicular_distance_point_to_line" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">perpendicular_distance_point_to_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span></dt>
+<dd><p>Calculate the perpendicular distance from a point to a line defined by two points.</p>
+<p>This function uses the cross product method for accurate distance calculation
+and handles all edge cases including vertical and horizontal lines.</p>
+<section id="id7">
+<h2>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>point<span class="classifier">tuple</span></dt><dd><p>Coordinates of the point (x, y).</p>
+</dd>
+<dt>line_point1<span class="classifier">tuple</span></dt><dd><p>Coordinates of the first point defining the line (x, y).</p>
+</dd>
+<dt>line_point2<span class="classifier">tuple</span></dt><dd><p>Coordinates of the second point defining the line (x, y).</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>distance<span class="classifier">float</span></dt><dd><p>Perpendicular distance from the point to the line.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>ValueError:</dt><dd><p>If the two line points are identical (cannot define a line).</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.math_calc.perpendicular_distance_point_to_line_3d">
+<span class="sig-name descname"><span class="pre">perpendicular_distance_point_to_line_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_point2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/math_calc.html#perpendicular_distance_point_to_line_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.math_calc.perpendicular_distance_point_to_line_3d" title="Link to this definition"></a></dt>
+<dd><p>Calculate the perpendicular distance from a point to a line in 3D space.</p>
+<p>Uses vector cross product to find the shortest distance from a point to a line
+defined by two points in 3D space.</p>
+<section id="id9">
+<h2>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>point<span class="classifier">tuple</span></dt><dd><p>Coordinates of the point (x, y, z).</p>
+</dd>
+<dt>line_point1<span class="classifier">tuple</span></dt><dd><p>Coordinates of the first point defining the line (x, y, z).</p>
+</dd>
+<dt>line_point2<span class="classifier">tuple</span></dt><dd><p>Coordinates of the second point defining the line (x, y, z).</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>distance<span class="classifier">float</span></dt><dd><p>Perpendicular distance from the point to the line in 3D space.</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h2>Raises<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>ValueError:</dt><dd><p>If the two line points are identical (cannot define a line).</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="calc_cell.html" class="btn btn-neutral float-left" title="cell_calc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cell.html" class="btn btn-neutral float-right" title="cell" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

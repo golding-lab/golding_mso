@@ -1,0 +1,976 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>golding_mso.sims &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">golding_mso.sims</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for golding_mso.sims</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">.nrn_types</span> <span class="kn">import</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">Exp2Syn</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">neuron</span> <span class="kn">import</span> <span class="n">h</span>
+<span class="kn">from</span> <span class="nn">.cell</span> <span class="kn">import</span> <span class="n">Cell</span>
+<span class="kn">from</span> <span class="nn">.cell_calc</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">tiplist</span><span class="p">,</span>
+    <span class="n">parentlist</span><span class="p">,</span>
+    <span class="n">getsegxyz</span><span class="p">,</span>
+    <span class="n">get_all_input_lengths</span><span class="p">,</span>
+    <span class="n">furthest_point</span><span class="p">,</span>
+    <span class="n">section_list_length</span><span class="p">,</span>
+    <span class="n">distance3D</span><span class="p">,</span>
+    <span class="n">axon_length_along</span><span class="p">,</span>
+    <span class="n">axon_length_to_terminal</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.syns</span> <span class="kn">import</span> <span class="n">innervate_total</span><span class="p">,</span> <span class="n">innervate_random</span><span class="p">,</span> <span class="n">innervate_points</span><span class="p">,</span> <span class="n">syn_path_place</span>
+
+<span class="c1"># Logger setup</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="propagation_test">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.propagation_test">[docs]</a>
+<span class="k">def</span> <span class="nf">propagation_test</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tests synapses at every segment and returns time at max depolarization.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell: Cell</span>
+<span class="sd">        Cell instance to pass to syntest_max_voltage</span>
+<span class="sd">    sectionlist: object</span>
+<span class="sd">        sectionlist (from Cell instance) to place synapses on</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    prop_data: list[dict[str,dict[str,list]]]</span>
+<span class="sd">        list[(&quot;rec_site&quot;/&quot;syn&quot;):(&quot;maxv&quot;/&quot;maxt&quot;):[list of max voltage or their time value]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting propagation_test&quot;</span><span class="p">)</span>
+    <span class="n">py_sections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">section_list</span><span class="p">)</span>  <span class="c1"># convert SectionList() to python list for len()</span>
+    <span class="n">propagation_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">section_index</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">section_list</span><span class="p">):</span>
+        <span class="c1"># Progress bar update placeholder</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Processing section: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> of </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span>
+            <span class="n">section_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">py_sections</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">synlist</span> <span class="o">=</span> <span class="n">innervate_total</span><span class="p">([</span><span class="n">section</span><span class="p">])</span>  <span class="c1"># makes list of synapses for synlist_test</span>
+        <span class="n">max_data</span> <span class="o">=</span> <span class="n">indiv_syn_test</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">synlist</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">propagation_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_data</span><span class="p">)</span>
+    <span class="c1"># Adds each max voltage and time value to created 2d list: [section][seg time/voltage]</span>
+    <span class="k">return</span> <span class="n">propagation_data</span></div>
+
+
+            
+            
+    
+<div class="viewcode-block" id="compute_propagation_test_difference">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.compute_propagation_test_difference">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_propagation_test_difference</span><span class="p">(</span>
+    <span class="n">rec_site</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">float</span><span class="p">]],</span> <span class="n">synapse</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">float</span><span class="p">]],</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;voltage&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the difference between rec_site and synapse data using a provided function.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rec_site : dict</span>
+<span class="sd">        Dictionary containing &#39;maxv&#39;, &#39;maxt&#39;, and &#39;restv&#39; for the recording site.</span>
+<span class="sd">    synapse : dict</span>
+<span class="sd">        Dictionary containing &#39;maxv&#39;, &#39;maxt&#39;, and &#39;restv&#39; for the synapse.</span>
+<span class="sd">    func : function</span>
+<span class="sd">        Function to apply to the max voltage or time values.</span>
+<span class="sd">    which : str, optional</span>
+<span class="sd">        Specifies whether to compute for &#39;voltage&#39; or &#39;time&#39;. Default is &#39;voltage&#39;.</span>
+<span class="sd">    \**kwargs : dict</span>
+<span class="sd">        Additional keyword arguments to pass to the function.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    section_data: list</span>
+<span class="sd">        List of computed values for section based on the provided function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;voltage&quot;</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;maxv&quot;</span>
+    <span class="k">elif</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;maxt&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value for &#39;which&#39;. Use &#39;voltage&#39; or &#39;time&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">section_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rec_site</span><span class="p">[</span><span class="n">key</span><span class="p">])):</span>
+        <span class="n">section_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">rec_site</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">synapse</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">section_data</span></div>
+
+
+
+<div class="viewcode-block" id="find_compensated_cond">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.find_compensated_cond">[docs]</a>
+<span class="k">def</span> <span class="nf">find_compensated_cond</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span>
+    <span class="n">seg</span><span class="p">:</span> <span class="n">Segment</span><span class="p">,</span>
+    <span class="n">maxv</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">desired_maxv</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">max_val</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mf">55.196</span><span class="p">,</span>
+    <span class="n">original_gmax</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">resting_potential</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mf">61.7</span><span class="p">,</span>
+    <span class="n">recursion_limit</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">recursion_count</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span><span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recursively adjusts synaptic conductance (gmax) to achieve a desired max voltage.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance to use for the simulation.</span>
+<span class="sd">    seg : Segment   </span>
+<span class="sd">        The segment where the synapse is located.</span>
+<span class="sd">    maxv : float</span>
+<span class="sd">        The maximum voltage recorded from the initial simulation.</span>
+<span class="sd">    desired_maxv : float</span>
+<span class="sd">        The target maximum voltage to achieve.</span>
+<span class="sd">    max_val : float, optional</span>
+<span class="sd">        Doesn&#39;t do anything really...</span>
+<span class="sd">        Default is -55.196.</span>
+<span class="sd">    original_gmax : float, optional</span>
+<span class="sd">        The initial conductance value to start with.</span>
+<span class="sd">        Default is 0.005.</span>
+<span class="sd">    tolerance : float, optional</span>
+<span class="sd">        The acceptable error range for the maximum voltage.</span>
+<span class="sd">        Default is 0.1.</span>
+<span class="sd">    resting_potential : float, optional</span>
+<span class="sd">        The resting potential of the cell.</span>
+<span class="sd">        Default is -61.7.</span>
+<span class="sd">    recursion_limit : int, optional</span>
+<span class="sd">        The maximum number of recursive calls allowed.</span>
+<span class="sd">        Default is 20.</span>
+<span class="sd">    recursion_count : int, optional</span>
+<span class="sd">        The current recursion depth.</span>
+<span class="sd">        Default is 0.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_gmax: float</span>
+<span class="sd">        The adjusted conductance value that achieves the desired maximum voltage.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">percent_change</span> <span class="o">=</span> <span class="p">(</span><span class="n">desired_maxv</span> <span class="o">-</span> <span class="n">resting_potential</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">maxv</span> <span class="o">-</span> <span class="n">resting_potential</span><span class="p">)</span>
+    <span class="n">new_gmax</span> <span class="o">=</span> <span class="n">original_gmax</span> <span class="o">*</span> <span class="p">(</span><span class="n">percent_change</span><span class="p">)</span>
+    <span class="n">synapse_list</span> <span class="o">=</span> <span class="n">innervate_points</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">indiv_syn_test</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="p">[</span><span class="n">synapse_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gmax</span><span class="o">=</span><span class="n">new_gmax</span><span class="p">)</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">desired_maxv</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;maxv&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">error</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conductance (</span><span class="si">{</span><span class="n">new_gmax</span><span class="si">}</span><span class="s2">) off by </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recursion_count</span> <span class="o">&gt;</span> <span class="n">recursion_limit</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recursion limit reached. Ending with gmax: </span><span class="si">{</span><span class="n">new_gmax</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">synapse_list</span><span class="p">:</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">new_gmax</span>
+        <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">synapse_list</span><span class="p">:</span>
+            <span class="n">syn</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">find_compensated_cond</span><span class="p">(</span>
+            <span class="n">cell</span><span class="p">,</span>
+            <span class="n">seg</span><span class="p">,</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;maxv&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">desired_maxv</span><span class="p">,</span>
+            <span class="n">max_val</span><span class="o">=</span><span class="n">max_val</span><span class="p">,</span>
+            <span class="n">original_gmax</span><span class="o">=</span><span class="n">new_gmax</span><span class="p">,</span>
+            <span class="n">recursion_count</span><span class="o">=</span><span class="n">recursion_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+            <span class="n">recursion_limit</span><span class="o">=</span><span class="n">recursion_limit</span><span class="p">,</span>
+            <span class="n">resting_potential</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;restv&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found adjusted conductance: </span><span class="si">{</span><span class="n">new_gmax</span><span class="si">}</span><span class="se">\n</span><span class="s2">Off by:</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">synapse_list</span><span class="p">:</span>
+            <span class="n">syn</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_gmax</span></div>
+
+
+
+<div class="viewcode-block" id="indiv_syn_test">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.indiv_syn_test">[docs]</a>
+<span class="k">def</span> <span class="nf">indiv_syn_test</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">synapse_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Exp2Syn</span><span class="p">],</span> <span class="n">rec_section</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">gmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Activates each synapse individually in a given list and, for each synapse, records the</span>
+<span class="sd">    max voltages and time at those voltages at the recording site and the synapse site</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell: Cell</span>
+<span class="sd">        Cell instance to pull stabilization_time variable to use.</span>
+<span class="sd">    synapse_list: list[Exp2Syn]</span>
+<span class="sd">        list of synapse NEURON point processes to activate.</span>
+<span class="sd">    rec_section: Section</span>
+<span class="sd">        Section to record from for the non-synapse compartment measurements.</span>
+<span class="sd">        Records from center of given section.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    recordings: dict</span>
+<span class="sd">        Dictionary with keys &#39;rec_site&#39; and &#39;syn&#39;, each containing dicts for &#39;maxv&#39;, &#39;maxt&#39;, and &#39;restv&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syncount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">synapse_list</span><span class="p">)</span>
+    <span class="n">max_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;rec_site&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;maxv&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;maxt&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;restv&quot;</span><span class="p">:</span> <span class="p">[]},</span>
+        <span class="s2">&quot;syn&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;maxv&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;maxt&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;restv&quot;</span><span class="p">:</span> <span class="p">[]},</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">syn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">synapse_list</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Activating synapse </span><span class="si">%d</span><span class="s2"> of </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">syncount</span><span class="p">)</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gmax</span>
+        <span class="n">syn_v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">rec_site_v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">t_syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">t_rec_site</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">cell</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="n">rec_section</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span> <span class="n">rec_site_v</span><span class="p">,</span> <span class="n">t_rec_site</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="n">rec_section</span>
+        <span class="p">)</span>
+        <span class="n">cell</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="n">syn</span><span class="o">.</span><span class="n">section</span><span class="p">(</span><span class="n">syn</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span> <span class="n">syn_v</span><span class="p">,</span> <span class="n">t_syn</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="n">syn</span><span class="o">.</span><span class="n">section</span>
+        <span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Simulation completed for synapse </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;maxv&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec_site_v</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;maxt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_rec_site</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rec_site_v</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()))</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;syn&quot;</span><span class="p">][</span><span class="s2">&quot;maxv&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syn_v</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;syn&quot;</span><span class="p">][</span><span class="s2">&quot;maxt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_syn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">syn_v</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()))</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;rec_site&quot;</span><span class="p">][</span><span class="s2">&quot;restv&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rec_site_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">max_data</span><span class="p">[</span><span class="s2">&quot;syn&quot;</span><span class="p">][</span><span class="s2">&quot;restv&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syn_v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;v and t at max for rec site: </span><span class="si">%d</span><span class="s2"> mV, </span><span class="si">%f</span><span class="s2"> ms&quot;</span><span class="p">,</span>
+            <span class="n">rec_site_v</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+            <span class="n">t_rec_site</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rec_site_v</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()),</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;v and t at max for synapse: </span><span class="si">%d</span><span class="s2"> mV, </span><span class="si">%f</span><span class="s2"> ms&quot;</span><span class="p">,</span>
+            <span class="n">syn_v</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+            <span class="n">t_syn</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">syn_v</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()),</span>
+        <span class="p">)</span>
+        <span class="n">syn</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">recordings</span> <span class="o">=</span> <span class="n">max_data</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Completed indiv_syn_test&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">recordings</span></div>
+
+
+
+<span class="c1"># TODO look into changing locs from 0-1 to 0-section.L</span>
+<div class="viewcode-block" id="syn_place">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.syn_place">[docs]</a>
+<span class="k">def</span> <span class="nf">syn_place</span><span class="p">(</span><span class="n">section</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">tau1</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.271</span><span class="p">,</span> <span class="n">tau2</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.271</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">syn_density</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">locs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Exp2Syn</span><span class="p">]:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Placing synapses on section: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">section</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates Exp2Syn point processes along a given section.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    section : Section</span>
+<span class="sd">        The NEURON section to place synapses on.</span>
+<span class="sd">    tau1 : float, optional</span>
+<span class="sd">        Rise time constant of the synapse (ms). Default is 0.271.</span>
+<span class="sd">    tau2 : float, optional</span>
+<span class="sd">        Decay time constant of the synapse (ms). Default is 0.271.</span>
+<span class="sd">    e : float, optional</span>
+<span class="sd">        Reversal potential of the synapse (mV). Default is 15.</span>
+<span class="sd">    syn_density : float, optional</span>
+<span class="sd">        Density of synapses (synapses per µm). If provided, overrides `locs`.</span>
+<span class="sd">    locs : list, optional</span>
+<span class="sd">        Specific locations (0-1) along the section to place synapses.</span>
+
+<span class="sd">   	Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    synlist : list</span>
+<span class="sd">        List of created synapses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sec_len</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">L</span>  <span class="c1"># Length of the section in µm</span>
+    <span class="n">synlist</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">List</span><span class="p">()</span>
+
+    <span class="c1"># Determine synapse placement based on density or specific locations</span>
+    <span class="k">if</span> <span class="n">syn_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">locs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Place synapses at specified locations</span>
+            <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">locs</span><span class="p">:</span>
+                <span class="n">syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Exp2Syn</span><span class="p">(</span><span class="n">section</span><span class="p">(</span><span class="n">loc</span><span class="p">))</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">tau1</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">tau2</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="n">synlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syn</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">synlist</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Default to placing synapses at each segment</span>
+            <span class="n">syncount</span> <span class="o">=</span> <span class="n">section</span><span class="o">.</span><span class="n">nseg</span>
+            <span class="n">syninc</span> <span class="o">=</span> <span class="n">sec_len</span> <span class="o">/</span> <span class="n">syncount</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Calculate synapse placement based on density</span>
+        <span class="n">dens</span> <span class="o">=</span> <span class="n">syn_density</span>
+        <span class="n">syncount</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sec_len</span> <span class="o">*</span> <span class="n">dens</span><span class="p">)</span>
+        <span class="n">syninc</span> <span class="o">=</span> <span class="n">sec_len</span> <span class="o">/</span> <span class="n">syncount</span>
+    <span class="c1"># Create synapses along the section</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">syncount</span><span class="p">):</span>
+        <span class="n">syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Exp2Syn</span><span class="p">(</span><span class="n">section</span><span class="p">(((</span><span class="n">syninc</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">syninc</span><span class="p">))</span> <span class="o">/</span> <span class="n">sec_len</span><span class="p">))</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">tau1</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">tau2</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="n">synlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syn</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created </span><span class="si">%d</span><span class="s2"> synapses&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">synlist</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">synlist</span></div>
+
+
+
+<div class="viewcode-block" id="syn_test">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.syn_test">[docs]</a>
+<span class="k">def</span> <span class="nf">syn_test</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span>
+    <span class="n">section_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">]],</span>
+    <span class="n">numsyn</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">synspace</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">axonspeed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">numtrial</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_fiber</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">gmax</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.037</span><span class="p">,</span>
+    <span class="n">release_probability</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.45</span><span class="p">,</span>
+    <span class="n">traces</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">innervation_pattern</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting syn_test&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates synaptic input on a list of section lists (e.g., for each branch), placing synapse groups</span>
+<span class="sd">    randomly or fully along them, and activates all synapses at once (not including axonal delay).</span>
+
+<span class="sd">    Calculates the average time to peak and average halfwidth, along with error.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell model instance.</span>
+<span class="sd">    section_lists : list</span>
+<span class="sd">        List of sectionlists, usually used for polar sides of cell (lateral vs. medial).</span>
+<span class="sd">    num_synapses : int</span>
+<span class="sd">        Number of synapses within a synapse span. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    synapse_spacing : float</span>
+<span class="sd">        Space between each synapse in a group. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    axon_speed : float, optional</span>
+<span class="sd">        Speed of axonal delay lines (in m/s).</span>
+<span class="sd">    num_trials : int</span>
+<span class="sd">        Number of trials to be averaged. Each trial = new synaptic placement.</span>
+<span class="sd">    num_fiber : int, optional</span>
+<span class="sd">        Number of axon fibers (or synapse groups) innervating each list. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    gmax : float</span>
+<span class="sd">        Combined conductance of all synapses in a span.</span>
+<span class="sd">    release_probability : float (0-1)</span>
+<span class="sd">        Chance of any individual synaptic release.</span>
+<span class="sd">    traces : bool</span>
+<span class="sd">        Whether or not traces for the trials are returned in the dictionary.</span>
+<span class="sd">    innervation_pattern : str</span>
+<span class="sd">        Pattern for innervation (&#39;random&#39; or &#39;full&#39;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">     -------</span>
+<span class="sd">     dict</span>
+<span class="sd">        Dictionary containing the average time to peak, average halfwidth, and their standard errors.</span>
+<span class="sd">        If traces is True, also includes the traces for the trials.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">maxtimeArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numtrial</span><span class="p">)</span>
+    <span class="n">halfwidthArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numtrial</span><span class="p">)</span>
+    <span class="n">trace_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">tipsections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">python_tipsections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">numpaths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">furthestdistance</span><span class="p">,</span> <span class="n">furthestsegment</span> <span class="o">=</span> <span class="n">furthest_point</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">section_listnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">section_lists</span><span class="p">)):</span>
+        <span class="n">tipsections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tiplist</span><span class="p">(</span><span class="n">section_lists</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">]))</span>
+        <span class="n">python_tipsections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tipsections</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">]))</span>
+        <span class="n">numpaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">python_tipsections</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">furthest_point</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">furthestdistance</span><span class="p">:</span>
+            <span class="n">furthestdistance</span> <span class="o">=</span> <span class="n">furthest_point</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">furthestsegment</span> <span class="o">=</span> <span class="n">furthest_point</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">section_lists</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">trialnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numtrial</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Running trial </span><span class="si">%d</span><span class="s2"> of </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trialnum</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">numtrial</span><span class="p">)</span>
+
+        <span class="n">synlists</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">netconlists</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">netstimlists</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">syn_conductance_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">section_listnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">section_lists</span><span class="p">)):</span>
+            <span class="n">netconlist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">netstimlist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">tip</span> <span class="ow">in</span> <span class="n">tipsections</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">]:</span>
+
+                    <span class="n">temppath</span> <span class="o">=</span> <span class="n">parentlist</span><span class="p">(</span>
+                        <span class="n">tip</span>
+                    <span class="p">)</span>  <span class="c1"># creating a path composed of each section from an end to the soma</span>
+                    <span class="n">temppathlength</span> <span class="o">=</span> <span class="n">section_list_length</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">temppath</span><span class="p">)[</span>
+                        <span class="mi">0</span>
+                    <span class="p">]</span>  <span class="c1"># getting the total length of the path</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">numsyn</span> <span class="o">*</span> <span class="n">synspace</span> <span class="o">&gt;</span> <span class="n">temppathlength</span>
+                    <span class="p">):</span>  <span class="c1"># checking if the synapse group can fit along this path</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                            <span class="s2">&quot;Spread of synapses is longer than the shortest path length&quot;</span>
+                        <span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_fiber</span><span class="p">):</span>
+                        <span class="n">randpath</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+                            <span class="mi">0</span><span class="p">,</span> <span class="n">numpaths</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="p">)</span>  <span class="c1"># chooses a random number to choose a path</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">parentlist</span><span class="p">(</span>
+                            <span class="n">python_tipsections</span><span class="p">[</span><span class="n">section_listnum</span><span class="p">][</span><span class="n">randpath</span><span class="p">]</span>
+                        <span class="p">)</span>  <span class="c1"># generates that section list of path from chosen end segment array element</span>
+                        <span class="n">pathlength</span> <span class="o">=</span> <span class="n">section_list_length</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">path</span><span class="p">)[</span>
+                            <span class="mi">0</span>
+                        <span class="p">]</span>  <span class="c1"># calculates total path length</span>
+                        <span class="n">randpoint</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="n">pathlength</span>
+                        <span class="p">)</span>  <span class="c1"># chooses a random value (0,1) and determines placement of most distal synapse of group</span>
+
+                        <span class="c1"># pick a new random value if the previous starting point cannot fit on the desired side</span>
+                        <span class="k">while</span> <span class="n">randpoint</span> <span class="o">-</span> <span class="p">(</span><span class="n">numsyn</span> <span class="o">*</span> <span class="n">synspace</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">randpoint</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="n">pathlength</span>
+
+                        <span class="c1"># create storage lists</span>
+                        <span class="n">synlocations</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numsyn</span><span class="p">):</span>  <span class="c1"># create synapses and add to list</span>
+                            <span class="n">synlocations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">randpoint</span> <span class="o">-</span> <span class="p">(</span><span class="n">synspace</span> <span class="o">*</span> <span class="n">k</span><span class="p">))</span>
+
+                            <span class="c1"># generate group of synapses and add group list to a larger array of them all</span>
+
+                            <span class="n">syngroup</span> <span class="o">=</span> <span class="n">syn_path_place</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">synlocations</span><span class="p">)</span>
+                            <span class="n">synlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syngroup</span><span class="p">)</span>
+                        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">synlist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;total&quot;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="n">section_lists</span><span class="p">:</span>
+                    <span class="n">synlist</span> <span class="o">=</span> <span class="n">innervate_total</span><span class="p">(</span><span class="n">section_list</span><span class="p">)</span>
+                    <span class="n">synlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synlist</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">syngroup</span> <span class="ow">in</span> <span class="n">synlists</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">syngroup</span><span class="p">:</span>
+                    <span class="n">syn_conductance_vectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">syn</span><span class="o">.</span><span class="n">_ref_g</span><span class="p">))</span>
+                    <span class="n">netstim</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetStim</span><span class="p">()</span>
+                    <span class="n">netcon</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetCon</span><span class="p">(</span><span class="n">netstim</span><span class="p">,</span> <span class="n">syn</span><span class="p">)</span>
+                    <span class="n">netcon</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">chance</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">chance</span> <span class="o">&gt;=</span> <span class="n">release_probability</span><span class="p">:</span>
+                        <span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gmax</span> <span class="o">/</span> <span class="n">numsyn</span>
+
+                    <span class="n">netstim</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># trigger once</span>
+                    <span class="n">netstim</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># not necessary</span>
+                    <span class="k">if</span> <span class="n">axonspeed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># find the distance of syn&#39;s segment from the most distant segment and calculate axon delay using given speed</span>
+                        <span class="n">distanceFromFurthestSegment</span> <span class="o">=</span> <span class="n">distance3D</span><span class="p">(</span>
+                            <span class="n">getsegxyz</span><span class="p">(</span><span class="n">furthestsegment</span><span class="p">),</span> <span class="n">getsegxyz</span><span class="p">(</span><span class="n">syn</span><span class="o">.</span><span class="n">get_segment</span><span class="p">())</span>
+                        <span class="p">)</span>
+                        <span class="n">axon_delay</span> <span class="o">=</span> <span class="n">distanceFromFurthestSegment</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">axonspeed</span><span class="p">)</span>
+                        <span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="n">axon_delay</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span>
+                    <span class="n">netstimlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">netstim</span><span class="p">)</span>
+                    <span class="n">netconlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">netcon</span><span class="p">)</span>
+
+                <span class="n">netconlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">netconlist</span><span class="p">)</span>
+                <span class="n">netstimlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">netstimlist</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">_ref_t</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">syn_conductance_vectors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">t</span> <span class="o">-</span> <span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span>
+        <span class="p">)</span>  <span class="c1"># set time relative to the start of synaptic activity</span>
+        <span class="k">for</span> <span class="n">syn_conductance_vector</span> <span class="ow">in</span> <span class="n">syn_conductance_vectors</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">syn_conductance_vector</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">syn_conductance_vectors</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">traces</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">trace_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">to_python</span><span class="p">(),</span>
+                    <span class="s2">&quot;voltage&quot;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">to_python</span><span class="p">(),</span>
+                    <span class="s2">&quot;conductance&quot;</span><span class="p">:</span> <span class="n">g</span><span class="o">.</span><span class="n">to_python</span><span class="p">(),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="n">maxVind</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">max_ind</span><span class="p">()</span>
+        <span class="n">maxtimeArray</span><span class="p">[</span><span class="n">trialnum</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">maxVind</span><span class="p">]</span>
+        <span class="n">halfV</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="n">firsthalf</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">indwhere</span><span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">halfV</span><span class="p">)]</span>
+        <span class="n">secondhalf</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">cl</span><span class="p">(</span><span class="n">maxVind</span><span class="p">)</span><span class="o">.</span><span class="n">indwhere</span><span class="p">(</span><span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span> <span class="n">halfV</span><span class="p">)</span> <span class="o">+</span> <span class="n">maxVind</span><span class="p">]</span>
+        <span class="n">halfwidth</span> <span class="o">=</span> <span class="n">secondhalf</span> <span class="o">-</span> <span class="n">firsthalf</span>
+        <span class="n">halfwidthArray</span><span class="p">[</span><span class="n">trialnum</span><span class="p">]</span> <span class="o">=</span> <span class="n">halfwidth</span>
+    <span class="n">maxtimeaverage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">maxtimeArray</span><span class="p">)</span>
+    <span class="n">halfwidthaverage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">halfwidthArray</span><span class="p">)</span>
+
+    <span class="n">maxtimesumofsquares</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">maxtime</span> <span class="ow">in</span> <span class="n">maxtimeArray</span><span class="p">:</span>
+        <span class="n">square</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxtime</span> <span class="o">-</span> <span class="n">maxtimeaverage</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">maxtimesumofsquares</span> <span class="o">+=</span> <span class="n">square</span>
+
+    <span class="n">maxtimevariance</span> <span class="o">=</span> <span class="n">maxtimesumofsquares</span> <span class="o">/</span> <span class="p">(</span><span class="n">numtrial</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">maxtimestandarddev</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">maxtimevariance</span><span class="p">)</span>
+    <span class="n">maxtimestandarderror</span> <span class="o">=</span> <span class="n">maxtimestandarddev</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numtrial</span><span class="p">)</span>
+
+    <span class="n">halfwidthsumofsquares</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">halfwidth</span> <span class="ow">in</span> <span class="n">halfwidthArray</span><span class="p">:</span>
+        <span class="n">square</span> <span class="o">=</span> <span class="p">(</span><span class="n">halfwidth</span> <span class="o">-</span> <span class="n">halfwidthaverage</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">halfwidthsumofsquares</span> <span class="o">+=</span> <span class="n">square</span>
+
+    <span class="n">halfwidthvariance</span> <span class="o">=</span> <span class="n">halfwidthsumofsquares</span> <span class="o">/</span> <span class="p">(</span><span class="n">numtrial</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">halfwidthstandarddev</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">halfwidthvariance</span><span class="p">)</span>
+    <span class="n">halfwidthstandarderror</span> <span class="o">=</span> <span class="n">halfwidthstandarddev</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numtrial</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">traces</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;maxtime&quot;</span><span class="p">:</span> <span class="n">maxtimeaverage</span><span class="p">,</span>
+            <span class="s2">&quot;maxtimestandarderror&quot;</span><span class="p">:</span> <span class="n">maxtimestandarderror</span><span class="p">,</span>
+            <span class="s2">&quot;halfwidth&quot;</span><span class="p">:</span> <span class="n">halfwidthaverage</span><span class="p">,</span>
+            <span class="s2">&quot;halfwidthstandarderror&quot;</span><span class="p">:</span> <span class="n">halfwidthstandarderror</span><span class="p">,</span>
+            <span class="s2">&quot;traces&quot;</span><span class="p">:</span> <span class="n">trace_list</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;maxtime&quot;</span><span class="p">:</span> <span class="n">maxtimeaverage</span><span class="p">,</span>
+            <span class="s2">&quot;maxtimestandarderror&quot;</span><span class="p">:</span> <span class="n">maxtimestandarderror</span><span class="p">,</span>
+            <span class="s2">&quot;halfwidth&quot;</span><span class="p">:</span> <span class="n">halfwidthaverage</span><span class="p">,</span>
+            <span class="s2">&quot;halfwidthstandarderror&quot;</span><span class="p">:</span> <span class="n">halfwidthstandarderror</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_cross_threshold</span><span class="p">(</span><span class="n">voltage_trace</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">resting</span> <span class="o">=</span> <span class="n">voltage_trace</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">relative</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">voltage_trace</span><span class="p">)</span> <span class="o">-</span> <span class="n">resting</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+
+
+<div class="viewcode-block" id="itd_test_sweep">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.itd_test_sweep">[docs]</a>
+<span class="k">def</span> <span class="nf">itd_test_sweep</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span>
+    <span class="n">offset_sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span>
+    <span class="n">stable_sections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span>
+    <span class="n">innervation_pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">axon_speed</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">cycles</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">interval</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">exc_fiber_gmax</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.037</span><span class="p">,</span>
+    <span class="n">inhibition</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">inh_timing</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mf">0.32</span><span class="p">,</span>
+    <span class="n">inh_fiber_gmax</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.022</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+    <span class="n">relative_threshold</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">record_axon</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">itd_vals</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">traces</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform ITD (Interaural Time Difference) tests on a given cell.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cell : Cell</span>
+<span class="sd">        The cell instance to be tested.</span>
+<span class="sd">    section_list_1 : list</span>
+<span class="sd">        List of polar branches for the first section.</span>
+<span class="sd">    section_list_2 : list</span>
+<span class="sd">        List of polar branches for the second section.</span>
+<span class="sd">    innervation_pattern : str</span>
+<span class="sd">        Pattern for innervation (&#39;random&#39;, &#39;total&#39;).</span>
+<span class="sd">    axon_speed : float, optional</span>
+<span class="sd">        The speed of axonal propagation (in m/s). Default is 1.</span>
+<span class="sd">    cycles : int, optional</span>
+<span class="sd">        The number of netstim cycles. Default is 1.</span>
+<span class="sd">    interval : float, optional</span>
+<span class="sd">        The time between netstim cycles. Default is 1.</span>
+<span class="sd">    exc_fiber_gmax : float, optional</span>
+<span class="sd">        The maximum conductance for excitatory fibers. Default is 0.037.</span>
+<span class="sd">    inhibition : bool, optional</span>
+<span class="sd">        Whether to include inhibition in the test. Default is False.</span>
+<span class="sd">    inh_timing : float, optional</span>
+<span class="sd">        The delay for inhibition (in ms). Default is -0.32.</span>
+<span class="sd">    inh_fiber_gmax : float, optional</span>
+<span class="sd">        The maximum conductance for inhibitory fibers. Default is 0.022.</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        The threshold for spike detection. Default is 0.</span>
+<span class="sd">    relative_threshold : bool, optional</span>
+<span class="sd">        Whether to use a threshold relative to cell&#39;s resting potential. Default is True.</span>
+<span class="sd">    record_axon : bool, optional</span>
+<span class="sd">        Whether to record axonal activity. Default is False.</span>
+<span class="sd">    itd_vals : list, optional</span>
+<span class="sd">        List of ITD values to test. Default is None.</span>
+<span class="sd">    traces : bool, optional</span>
+<span class="sd">        Whether to record traces. Default is False.</span>
+<span class="sd">    syn_space : float, optional</span>
+<span class="sd">        Space between each synapse in a group. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    num_syn : int, optional</span>
+<span class="sd">        Number of synapses in each group. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    num_fiber : int, optional</span>
+<span class="sd">        Number of axon fibers (or synapse groups) innervating each list. Ignored if innervation_pattern is &#39;total&#39;.</span>
+<span class="sd">    \**kwargs : dict</span>
+<span class="sd">        Additional keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results</span>
+<span class="sd">        Results of the ITD test sweep {spike_counts, traces, itd_vals}.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">saved_args</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="nb">locals</span><span class="p">()}</span>
+    <span class="n">section_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">offset_sections</span><span class="p">,</span> <span class="n">stable_sections</span><span class="p">]</span>
+    <span class="n">trace_list</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">itd_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;itd_range&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="s2">&quot;itd_step&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">itd_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+                <span class="o">-</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;itd_range&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;itd_range&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;itd_step&quot;</span><span class="p">],</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;itd_step&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;itd_vals must be provided or itd_range and itd_step must be specified&quot;</span>
+            <span class="p">)</span>
+    <span class="n">spike_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">itd_vals</span><span class="p">))</span>
+    <span class="n">inh_delays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">inh_timing</span><span class="p">,</span> <span class="n">inh_timing</span> <span class="o">-</span> <span class="mf">0.06</span><span class="p">])</span>
+    <span class="n">sim_start_time</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">itd_vals</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">inh_delays</span><span class="p">)))</span> <span class="o">+</span> <span class="n">cell</span><span class="o">.</span><span class="n">stabilization_time</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;itd vals:</span><span class="si">{</span><span class="n">itd_vals</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">{</span><span class="s2">&quot;numsyn&quot;</span><span class="p">,</span> <span class="s2">&quot;synspace&quot;</span><span class="p">,</span> <span class="s2">&quot;numfiber&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">numsyn</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_syn&quot;</span><span class="p">]</span>
+            <span class="n">synspace</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;syn_space&quot;</span><span class="p">]</span>
+            <span class="n">numfiber</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_fiber&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;numsyn, synspace, and numfiber must be provided for random innervation pattern&quot;</span>
+            <span class="p">)</span>
+    
+    <span class="n">input_length_lookup</span> <span class="o">=</span> <span class="n">get_all_input_lengths</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="p">[</span><span class="n">offset_sections</span><span class="p">,</span> <span class="n">stable_sections</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;total&quot;</span><span class="p">:</span>
+        <span class="n">total_synlists</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="n">section_lists</span><span class="p">:</span>
+            <span class="n">syngroups</span> <span class="o">=</span> <span class="p">[</span><span class="n">innervate_total</span><span class="p">(</span><span class="n">section_list</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">cycles</span><span class="o">=</span><span class="n">cycles</span><span class="p">)]</span>
+            <span class="n">total_synlists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syngroups</span><span class="p">)</span>
+        <span class="n">dist_cond</span> <span class="o">=</span> <span class="n">exc_fiber_gmax</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">([</span><span class="n">sec</span><span class="o">.</span><span class="n">nseg</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">offset_sections</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">stable_sections</span><span class="p">))])</span>
+        <span class="p">)</span>
+
+    
+
+    <span class="n">itd_vals_print</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">itd_vals</span><span class="p">[:</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="n">itd_vals_print</span> <span class="o">+=</span> <span class="s1">&#39;...&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting itd_test with delays: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">itd_vals_print</span><span class="p">)</span>
+    <span class="n">line_width</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">log_str</span> <span class="o">=</span> <span class="s2">&quot;Parameters: </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">saved_args</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">param_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">line_width</span><span class="p">:</span>
+            <span class="n">log_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">param_str</span><span class="p">[:</span><span class="n">line_width</span><span class="p">]</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">param_str</span> <span class="o">=</span> <span class="n">param_str</span><span class="p">[</span><span class="n">line_width</span><span class="p">:]</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_str</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">line_width</span><span class="p">:</span>
+                
+                <span class="n">log_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">space</span><span class="si">}{</span><span class="n">param_str</span><span class="p">[:</span><span class="n">line_width</span><span class="p">]</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">param_str</span> <span class="o">=</span> <span class="n">param_str</span><span class="p">[</span><span class="n">line_width</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_str</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> <span class="n">log_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">space</span><span class="si">}{</span><span class="n">param_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_str</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">log_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">param_str</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">log_str</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">itd_num</span><span class="p">,</span> <span class="n">itd_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">itd_vals</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processing delay step </span><span class="si">%.2f</span><span class="s2"> ms&quot;</span><span class="p">,</span> <span class="n">itd_val</span><span class="p">)</span>
+        <span class="n">inhibitsyns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">inhibitsyn_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">inhibitsyn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Exp2Syn</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+            <span class="n">inhibitsyn</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span>
+            <span class="n">inhibitsyn</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="mf">0.28</span>
+            <span class="n">inhibitsyn</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="mf">1.85</span>
+            <span class="n">inhibitstim</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetStim</span><span class="p">()</span>
+            <span class="n">inhibitstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">inhibitstim</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">cycles</span>
+            <span class="n">inhibitstim</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+            <span class="n">inhibitcon</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetCon</span><span class="p">(</span><span class="n">inhibitstim</span><span class="p">,</span> <span class="n">inhibitsyn</span><span class="p">)</span>
+            <span class="n">inhibitcon</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">inhibitcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">inh_fiber_gmax</span> <span class="o">/</span> <span class="mi">2</span>
+
+            <span class="k">if</span> <span class="n">inhibition</span><span class="p">:</span>
+                <span class="n">inhibitstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">sim_start_time</span>
+                    <span class="o">+</span> <span class="n">inh_delays</span><span class="p">[</span><span class="n">inhibitsyn_num</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="p">(</span><span class="n">itd_val</span> <span class="o">*</span> <span class="n">inhibitsyn_num</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="p">(</span>
+                        <span class="n">axon_length_to_terminal</span><span class="p">(</span>
+                            <span class="n">cell</span><span class="p">,</span>
+                            <span class="n">inhibitsyn</span><span class="o">.</span><span class="n">get_segment</span><span class="p">(),</span>
+                            <span class="n">section_list</span><span class="o">=</span><span class="n">section_lists</span><span class="p">[</span><span class="n">inhibitsyn_num</span><span class="p">],</span>
+                            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;straight&quot;</span><span class="p">,</span>
+                        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="o">/</span> <span class="p">(</span><span class="n">axon_speed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">+</span> <span class="p">(</span>
+                        <span class="n">axon_length_along</span><span class="p">(</span>
+                        <span class="n">inhibitsyn</span><span class="o">.</span><span class="n">get_segment</span><span class="p">(),</span>
+                        <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">),</span>
+                        <span class="p">)</span>
+                       <span class="o">/</span> <span class="p">(</span><span class="n">axon_speed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="n">inhibitsyns</span><span class="p">[</span><span class="n">inhibitsyn_num</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">inhibitsyn</span><span class="p">,</span> <span class="n">inhibitstim</span><span class="p">,</span> <span class="n">inhibitcon</span><span class="p">)</span>
+
+        <span class="n">syn_lists</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">!=</span> <span class="s2">&quot;total&quot;</span> <span class="k">else</span> <span class="n">total_synlists</span>
+        <span class="k">for</span> <span class="n">section_list_idx</span><span class="p">,</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">section_lists</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processing section list #</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">section_list_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">syngroups</span> <span class="o">=</span> <span class="n">innervate_random</span><span class="p">(</span>
+                    <span class="n">cell</span><span class="p">,</span>
+                    <span class="n">section_list</span><span class="p">,</span>
+                    <span class="n">numfiber</span><span class="p">,</span>
+                    <span class="n">numsyn</span><span class="p">,</span>
+                    <span class="n">synspace</span><span class="p">,</span>
+                    <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+                    <span class="n">cycles</span><span class="o">=</span><span class="n">cycles</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">syn_lists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">syngroups</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">syn_group</span> <span class="ow">in</span> <span class="n">syn_lists</span><span class="p">[</span><span class="n">section_list_idx</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">syn_unit</span> <span class="ow">in</span> <span class="n">syn_group</span><span class="p">:</span>
+
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">cycles</span>
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mf">0.45</span><span class="p">:</span>
+                        <span class="n">syn_unit</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">else</span><span class="p">:</span>
+
+                        <span class="n">syn_unit</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">exc_fiber_gmax</span> <span class="o">/</span> <span class="n">numsyn</span>
+                            <span class="k">if</span> <span class="n">innervation_pattern</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span>
+                            <span class="k">else</span> <span class="n">dist_cond</span>
+                        <span class="p">)</span>
+                   
+                    <span class="n">axon_delay</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">axon_speed</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">axon_length</span> <span class="o">=</span> <span class="n">input_length_lookup</span><span class="p">[</span><span class="n">syn_unit</span><span class="o">.</span><span class="n">segment</span><span class="p">]</span>
+                        <span class="n">axon_delay</span> <span class="o">=</span> <span class="n">axon_length</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">axon_speed</span><span class="p">)</span>
+
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">sim_start_time</span> <span class="o">+</span> <span class="n">axon_delay</span>
+                    <span class="p">)</span>
+
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netstim</span><span class="o">.</span><span class="n">start</span> <span class="o">+=</span> <span class="n">itd_val</span> <span class="k">if</span> <span class="n">section_list</span> <span class="o">==</span> <span class="n">offset_sections</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">v_soma</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">v_axon</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">t_soma</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">t_axon</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span>
+        <span class="n">cell</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span> <span class="n">v_soma</span><span class="p">,</span> <span class="n">t_soma</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">record_axon</span><span class="p">:</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">cvode</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">,</span> <span class="n">v_axon</span><span class="p">,</span> <span class="n">t_axon</span><span class="p">,</span> <span class="n">sec</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">v_monitor</span> <span class="o">=</span> <span class="n">v_axon</span> <span class="k">if</span> <span class="n">record_axon</span> <span class="k">else</span> <span class="n">v_soma</span>
+
+        <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">resting_potential</span><span class="p">)</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="n">sim_start_time</span> <span class="o">+</span> <span class="n">interval</span> <span class="o">*</span> <span class="n">cycles</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+
+        <span class="n">curr_traces</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;time_soma&quot;</span><span class="p">:</span> <span class="n">t_soma</span><span class="o">.</span><span class="n">to_python</span><span class="p">(),</span>
+            <span class="s2">&quot;voltage_soma&quot;</span><span class="p">:</span> <span class="n">v_soma</span><span class="o">.</span><span class="n">to_python</span><span class="p">(),</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">record_axon</span><span class="p">:</span>
+            <span class="n">curr_traces</span><span class="p">[</span><span class="s2">&quot;time_axon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_axon</span><span class="o">.</span><span class="n">to_python</span><span class="p">()</span>
+            <span class="n">curr_traces</span><span class="p">[</span><span class="s2">&quot;voltage_axon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_axon</span><span class="o">.</span><span class="n">to_python</span><span class="p">()</span>
+
+        <span class="n">spike_counts</span><span class="p">[</span><span class="n">itd_num</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">_cross_threshold</span><span class="p">(</span>
+            <span class="n">v_monitor</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="n">relative_threshold</span>
+        <span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">syn_list</span> <span class="ow">in</span> <span class="n">syn_lists</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">syn_group</span> <span class="ow">in</span> <span class="n">syn_list</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">syn_unit</span> <span class="ow">in</span> <span class="n">syn_group</span><span class="p">:</span>
+                    <span class="n">syn_unit</span><span class="o">.</span><span class="n">netcon</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">del</span> <span class="n">syn_lists</span>
+
+        <span class="n">trace_list</span><span class="p">[</span><span class="n">itd_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">curr_traces</span> <span class="k">if</span> <span class="n">traces</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed itd_test for cell: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">cell_name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Returning delay threshold probabilities and traces&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;spike_counts&quot;</span><span class="p">:</span> <span class="n">spike_counts</span><span class="p">,</span>
+        <span class="s2">&quot;traces&quot;</span><span class="p">:</span> <span class="n">trace_list</span> <span class="k">if</span> <span class="n">traces</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;itd_vals&quot;</span><span class="p">:</span> <span class="n">itd_vals</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_attenuation_values">
+<a class="viewcode-back" href="../../sims.html#golding_mso.sims.get_attenuation_values">[docs]</a>
+<span class="k">def</span> <span class="nf">get_attenuation_values</span><span class="p">(</span>
+    <span class="n">cell</span><span class="p">,</span>  <span class="c1"># cell instance</span>
+    <span class="n">sectionlist1</span><span class="p">,</span>
+    <span class="n">sectionlist2</span><span class="p">,</span>  <span class="c1"># list of polar branches</span>
+    <span class="n">exc_fiber_gmax</span><span class="o">=</span><span class="mf">0.037</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Calculating attenuation values for cell: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">cell_name</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get attenuation values for a cell&quot;&quot;&quot;</span>
+    <span class="n">section_lists</span> <span class="o">=</span> <span class="p">[</span><span class="n">sectionlist1</span><span class="p">,</span> <span class="n">sectionlist2</span><span class="p">]</span>
+    <span class="n">section_list_data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">()]</span>
+    <span class="k">for</span> <span class="n">list_index</span><span class="p">,</span> <span class="n">section_list</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">section_lists</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">section_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">sec</span><span class="p">:</span>
+                <span class="n">syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Exp2Syn</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="mf">0.29</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="mf">0.29</span>
+                <span class="n">syn_con</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">NetCon</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">syn</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">exc_fiber_gmax</span><span class="p">)</span>
+                <span class="n">syn_con</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">syn</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">_ref_t</span><span class="p">)</span>
+                <span class="n">v_soma</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">)</span>
+                <span class="n">v_syn</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">)</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">()</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="mi">10010</span><span class="p">)</span>
+                <span class="n">v_proportion</span> <span class="o">=</span> <span class="n">v_syn</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">v_soma</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">section_list_data</span><span class="p">[</span><span class="n">list_index</span><span class="p">][</span><span class="n">sec</span><span class="o">.</span><span class="n">nchild</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v_proportion</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">section_list_data</span><span class="p">[</span><span class="n">list_index</span><span class="p">][</span><span class="n">sec</span><span class="o">.</span><span class="n">nchild</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">v_proportion</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed attenuation values calculation&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">section_list_data</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
