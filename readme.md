@@ -30,7 +30,6 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 *Only tested on macOS and Windows Subsystem for Linux*
 
-- Install [NEURON](https://www.neuron.yale.edu/neuron/download) on your system.
 - Ensure Python 3.8+ is installed.
 
 ### Installation
