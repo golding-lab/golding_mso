@@ -14,10 +14,10 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 - 40 reconstructed MSO neuron morphologies
   - [archived](https://github.com/golding-lab/golding_mso/blob/main/cells.zip)
-  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/cells)
+  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
 - Pre-defined channel definitions (KLT, KHT, HCN, Na)
   - [archived](https://github.com/golding-lab/golding_mso/blob/main/mechanisms.zip)
-  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/mechanisms)
+  - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/mechanisms)
 - Pre-configured tools
   - Synapse placement
   - EPSP propagation
