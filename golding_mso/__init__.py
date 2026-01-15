@@ -39,12 +39,18 @@ else:
     load_pkg_dll()
 __version__ = "0.1.0"
 
-# Load NEURON 3D import file
+# Create library dictionary to access morphologies from top level
+morphologies = utils.get_morphologies()
+"""Dictionary of available morphology files in the package, keyed by morphology name."""
 
+mechanisms = utils.get_mechanisms()
+"""Dictionary of available mechanism files in the package, keyed by mechanism name."""
 
-# Create library dictionary to access morphologies
-morphologies = get_morphologies()
+config = Config()
+"""Current configuration (dict) loaded from the user's package config file"""
 
+user_pkg_dir = pathlib.Path.home() / ".golding_mso"
+"""Path to the user's golding_mso configuration directory."""
 
 # Source:
 # https://stackoverflow.com/questions/49049044/python-setup-of-logging-allowing-multiline-strings-logging-infofoo-nbar
