@@ -16,7 +16,7 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
   - [archived](https://github.com/golding-lab/golding_mso/blob/main/cells.zip)
   - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
 - Pre-defined channel definitions (KLT, KHT, HCN, Na)
-  - [archived](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/mechanisms.zip)
+  - [archived](https://github.com/golding-lab/golding_mso/blob/main/mechanisms.zip)
   - [in repo](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/mechanisms)
 - Pre-configured tools
   - Synapse placement
@@ -28,8 +28,8 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 ### Prerequisites
 
-*Only tested on macOS*
-- Install [NEURON](https://www.neuron.yale.edu/neuron/download) on your system.
+*Only tested on macOS and Windows Subsystem for Linux*
+
 - Ensure Python 3.8+ is installed.
 
 ### Installation

@@ -183,8 +183,7 @@ def compile_mechs(
         except Exception as e:
             logger.error(f"Mechanism compilation failed: {e}")
             raise e
-        
-    dll_paths = ["/x86_64/libnrnmech.dylib", r"\nrnmech.dll"]
+    dll_paths = ["/x86_64/libnrnmech.dylib", "/x86_64/libnrnmech.so", r"\nrnmech.dll"]
     for dll_path in dll_paths:
         full_path = cwd.joinpath(*dll_path.split("/"))
         if os.path.exists(full_path):
