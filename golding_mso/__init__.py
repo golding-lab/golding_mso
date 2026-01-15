@@ -22,16 +22,13 @@ h.load_file("import3d.hoc")
 
 # Import key modules for ease of access
 from .cell import Cell
-from .utils import (
-    get_cell_file_paths,
-    get_package_path,
-    get_config,
-    set_config,
-    reset_config,
-    compile_mechs,
-    load_pkg_dll,
-    get_morphologies,
-)
+from .config import Config
+from . import utils
+from . import cell_calc
+from . import math_calc
+from . import data
+from . import sims
+from . import syns
 
 pkg_mech_compiled = (get_package_path() / "mechanisms" / "x86_64").exists() or (
     get_package_path() / "mechanisms" / "nrnmech.dll"
