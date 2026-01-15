@@ -7,7 +7,9 @@ import numpy as np
 from pathlib import Path
 
 from neuron import h
-from .utils import get_config
+
+from .config import Config
+from . import config as pkg_config
 
 dill_import = True
 try:
@@ -99,17 +101,17 @@ class Cell:
 
     """
 
-    def __init__(self, cell_file: str, config: dict = None, **kwargs) -> None:
+    def __init__(self, cell_file: str, config_override: dict | Config = None, **kwargs) -> None:
         """
 
         Parameters
         ----------
         cell_file : str
             Filepath to a morphology file in .asc format from Neurolucida.
-        config_path : str, optional
-            Overrides configuration with a custom config file path. Defaults to None.
+        config_override : dict | Config, optional
+            Overrides configuration with a custom Config or dictionary. Defaults to None.
         """
-        self._load_default_values(config=config, **kwargs)
+        self._load_default_values(config_override=config_override, **kwargs)
         self._initialize_cell(cell_file, **kwargs)
 
     def __repr__(self) -> str:
@@ -230,6 +232,18 @@ class Cell:
                 psections.update({sec: sec.psection()})
             return psections
 
+    def reload_defaults(self, config_override: dict | Config = None) -> None:
+        """
+        Resets the cell's configuration to the default or a provided configuration.
+
+        Parameters
+        ----------
+        config_override : dict | Config, optional
+            Configuration file path or dictionary to load cell parameters from. If None, uses current session's config. Defaults to None.
+        """
+        self._load_default_values(config_override=config_override)
+        self._reset()
+        
     def restore_state(self, cell_state: list[list[list[list[object]]]] = None):
         """
         Restores the cell's mechanisms to a previously stored state.
@@ -694,7 +708,7 @@ class Cell:
         disconnect : bool, optional
             Whether to electrically disconnect filopodia from the cell. Default is True.
         """
-        from .cell_calc import tiplist
+        from .cell_calc import get_terminal_sections
 
         if filopodia_maximum_length is None:
             filopodia_maximum_length = self.filopodia_maximum_length
@@ -735,7 +749,7 @@ class Cell:
         # Iteratively remove sections classified as filopodia
         while True:
             deleted = False
-            for sec in tiplist(self.allsec):
+            for sec in get_terminal_sections(self.allsec):
                 # Check if the section is too short and thin
                 if (
                     sec.L < filopodia_maximum_length
@@ -743,7 +757,7 @@ class Cell:
                 ):
                     if disconnect:
                         sec.disconnect()  # Disconnect filopodia from the cell
-                    # Remove from all relevant SectionLists
+                    # Remove from all relevant lists
                     self.allsec_nofilopodia.remove(sec)
                     if sec in self.dendrites_nofilopodia:
                         self.dendrites_nofilopodia.remove(sec)
@@ -983,32 +997,33 @@ class Cell:
         i3d.instantiate(self)
         self.channels_assigned = False
         self._define_section_lists(disconnect=kwargs.get("disconnect", True), filopodia_maximum_length=kwargs.get("filopodia_maximum_length", None), filopodia_maximum_diameter=kwargs.get("filopodia_maximum_diameter", None))
-        self._set_compartments(compartment_size=kwargs.get("compartment_size", None))
+        self._set_compartments(compartment_size=kwargs.get("compartment_size", 2))
 
-    def _load_default_values(self, config: str = None, **kwargs) -> None:
+    def _load_default_values(self, config_override: dict | Config = None, **kwargs) -> None:
         """
         Loads default channel attributes and conductance values into the cell instance's attributes (conductances & channels).
         
         Parameters
         ----------
-        config : str or dict, optional
-            Configuration file path or dictionary to load cell parameters from. If None, uses default config. Defaults to None.
+        config_override : Config or dict, optional
+            Configuration file path or dictionary to load cell parameters from. If None, uses current session's config. Defaults to None.
         """
-        if isinstance(config, dict):
-            config = config
+        if isinstance(config_override, dict):
+            use_config = config_override
         else:
-            config = get_config(config_path=config)
-        for k, v in config["initialization"].items():
+            use_config = pkg_config
+        
+        for k, v in use_config["initialization"].items():
             if k in list(kwargs.keys()):
                 setattr(self, k, kwargs[k])
             else:
                 setattr(self, k, v)
             logger.debug(f"Setting {k} to {getattr(self, k)}")
-        cellchannels = config["channels"]
-        cellconductances = config["conductances"]
+        cellchannels = use_config["channels"]
+        cellconductances = use_config["conductances"]
         self.conductances = ParamDict(cellconductances, self)
         self.channels = ParamDict(cellchannels, self)
-        self.config = config
+        self.config = use_config
 
     def _reset_properties(self):
         """

@@ -310,125 +310,28 @@ plt.show()
 ### Editing config
 
 ```python
-from golding_mso import get_config, set_config, reset_config
+
+from golding_mso import config as current_config
 from pprint import pprint
 
-reset_config()
-current_config = get_config()
-print("--- Original Configuration ---")
-pprint(current_config)
-print("\n--- Modifying 'Ra' in 'initialization' to 150 ---\n")
+current_config.reload() # current_config = user_config
+
+package_default_config = current_config.from_default
+current_config.reload_default() # current_config = package_default_config
 
 current_config['initialization']['Ra'] = 150
-set_config(current_config)
-print("--- Updated Configuration ---")
-pprint(get_config())
 
-reset_config();
-```
+# Save current config into user default
+current_config.save()
+user_config = current_config.from_user
+#user_config = current_config
 
-```
---- Original Configuration ---
-{'channels': {'hcn': {'cond_label': 'gbar',
-                        'ion': 'h',
-                        'mechanism': 'khurana_hcn',
-                        'reversal_potential': -35},
-                'kht': {'cond_label': 'gbar',
-                        'ion': 'k',
-                        'mechanism': 'nabel_kht',
-                        'reversal_potential': -90},
-                'klt': {'cond_label': 'gbar',
-                        'ion': 'k',
-                        'mechanism': 'mathews_klt',
-                        'reversal_potential': -90},
-                'leak': {'cond_label': 'gbar',
-                        'ion': None,
-                        'mechanism': 'leak',
-                        'reversal_potential': -70},
-                'na': {'cond_label': 'gbar',
-                        'ion': 'na',
-                        'mechanism': 'scott_na',
-                        'reversal_potential': 69}},
-    'conductances': {'cais': {'hcn': 0.002,
-                            'klt': 0.155,
-                            'leak': 5e-05,
-                            'na': 0.25},
-                    'dendrite': {'hcn': 0.001,
-                                'kht': 0.00055,
-                                'klt': 0.02,
-                                'leak': 5e-05,
-                                'na': 0},
-                    'internode': {'leak': 2e-05},
-                    'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
-                    'soma': {'hcn': 0.001,
-                            'kht': 0.00055,
-                            'klt': 0.04,
-                            'leak': 5e-05,
-                            'na': 0.03},
-                    'tais': {'hcn': 0.002,
-                            'klt': 0.155,
-                            'leak': 5e-05,
-                            'na': 0.25}},
-    'general': {'logging_level': 'ERROR'},
-    'initialization': {'Ra': 200,
-                    'cm': 0.9,
-                    'compartment_size': 2,
-                    'filopodia_maximum_diameter': 0.5,
-                    'filopodia_maximum_length': 15,
-                    'internode_cm': 0.0111,
-                    'stabilization_time': 100}}
+# Load package default into current config
+current_config.reload_default()
+package_default_config = current_config.from_default
+#package_default_config = current_config
 
---- Modifying 'Ra' in 'initialization' to 150 ---
 
---- Updated Configuration ---
-{'channels': {'hcn': {'cond_label': 'gbar',
-                        'ion': 'h',
-                        'mechanism': 'khurana_hcn',
-                        'reversal_potential': -35},
-                'kht': {'cond_label': 'gbar',
-                        'ion': 'k',
-                        'mechanism': 'nabel_kht',
-                        'reversal_potential': -90},
-                'klt': {'cond_label': 'gbar',
-                        'ion': 'k',
-                        'mechanism': 'mathews_klt',
-                        'reversal_potential': -90},
-                'leak': {'cond_label': 'gbar',
-                        'ion': None,
-                        'mechanism': 'leak',
-                        'reversal_potential': -70},
-                'na': {'cond_label': 'gbar',
-                        'ion': 'na',
-                        'mechanism': 'scott_na',
-                        'reversal_potential': 69}},
-    'conductances': {'cais': {'hcn': 0.002,
-                            'klt': 0.155,
-                            'leak': 5e-05,
-                            'na': 0.25},
-                    'dendrite': {'hcn': 0.001,
-                                'kht': 0.00055,
-                                'klt': 0.02,
-                                'leak': 5e-05,
-                                'na': 0},
-                    'internode': {'leak': 2e-05},
-                    'node': {'klt': 0.155, 'leak': 0.005, 'na': 0.25},
-                    'soma': {'hcn': 0.001,
-                            'kht': 0.00055,
-                            'klt': 0.04,
-                            'leak': 5e-05,
-                            'na': 0.03},
-                    'tais': {'hcn': 0.002,
-                            'klt': 0.155,
-                            'leak': 5e-05,
-                            'na': 0.25}},
-    'general': {'logging_level': 'ERROR'},
-    'initialization': {'Ra': 150,
-                    'cm': 0.9,
-                    'compartment_size': 2,
-                    'filopodia_maximum_diameter': 0.5,
-                    'filopodia_maximum_length': 15,
-                    'internode_cm': 0.0111,
-                    'stabilization_time': 100}}
 ```
 
 </details>

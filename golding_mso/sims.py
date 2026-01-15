@@ -11,8 +11,8 @@ from collections.abc import Callable
 from neuron import h
 from .cell import Cell
 from .cell_calc import (
-    tiplist,
-    parentlist,
+    get_terminal_sections,
+    get_parent_sections,
     getsegxyz,
     get_all_input_lengths,
     furthest_point,
@@ -38,13 +38,13 @@ def propagation_test(
     ----------
     cell: Cell
         Cell instance to pass to syntest_max_voltage
-    section_list: object
+    section_list: list[Section]
         sectionlist (from Cell instance) to place synapses on
 
     Returns
     -------
-    list[dict[str,dict[str,list]]]
-        list[("rec_site"/"syn"):("maxv"/"maxt"):[list of max voltage or their time value]]
+    list[dict[str, dict[str, list[float]]]]
+        List of dictionaries containing max voltage and time data for each section.
     """
     logger.debug("Starting propagation_test")
     py_sections = list(section_list)  # convert SectionList() to python list for len()
@@ -377,18 +377,18 @@ def syn_test(
     maxtimeArray = np.zeros(numtrial)
     halfwidthArray = np.zeros(numtrial)
     trace_list = []
-    tipsections = []
-    python_tipsections = []
+    end_sections = []
+    python_end_sections = []
     numpaths = []
-    furthestdistance, furthestsegment = furthest_point(cell, section_lists[0])
+    furthestdistance, furthestsegment = furthest_point(cell.somatic[0], section_lists[0])
 
     for section_listnum in range(len(section_lists)):
-        tipsections.append(tiplist(section_lists[section_listnum]))
-        python_tipsections.append(list(tipsections[section_listnum]))
-        numpaths.append(len(python_tipsections[section_listnum]))
-        if furthest_point(cell, section_lists[section_listnum])[0] > furthestdistance:
-            furthestdistance = furthest_point(cell, section_lists[section_listnum])[0]
-            furthestsegment = furthest_point(cell, section_lists[section_listnum])[1]
+        end_sections.append(get_terminal_sections(section_lists[section_listnum]))
+        python_end_sections.append(list(end_sections[section_listnum]))
+        numpaths.append(len(python_end_sections[section_listnum]))
+        if furthest_point(cell.somatic[0], section_lists[section_listnum])[0] > furthestdistance:
+            furthestdistance = furthest_point(cell.somatic[0], section_lists[section_listnum])[0]
+            furthestsegment = furthest_point(cell.somatic[0], section_lists[section_listnum])[1]
 
     for trialnum in range(numtrial):
         logger.debug("Running trial %d of %d", trialnum + 1, numtrial)
@@ -401,10 +401,10 @@ def syn_test(
             netconlist = []
             netstimlist = []
             if innervation_pattern == "random":
-                for tip in tipsections[section_listnum]:
+                for end in end_sections[section_listnum]:
 
-                    temppath = parentlist(
-                        tip
+                    temppath = get_parent_sections(
+                        end
                     )  # creating a path composed of each section from an end to the soma
                     temppathlength = section_list_length(cell, temppath)[
                         0
@@ -420,8 +420,8 @@ def syn_test(
                         randpath = random.randint(
                             0, numpaths[section_listnum] - 1
                         )  # chooses a random number to choose a path
-                        path = parentlist(
-                            python_tipsections[section_listnum][randpath]
+                        path = get_parent_sections(
+                            python_end_sections[section_listnum][randpath]
                         )  # generates that section list of path from chosen end segment array element
                         pathlength = section_list_length(cell, path)[
                             0

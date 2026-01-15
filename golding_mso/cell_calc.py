@@ -18,18 +18,18 @@ h.load_file("stdrun.hoc")
 h.load_file("import3d.hoc")
 
 
-def tiplist(section_list: list[Section]) -> list[Section]:
+def get_terminal_sections(section_list: list[Section]) -> list[Section]:
     """
     Identifies all terminal sections in a given list.
 
     Parameters
     ----------
-    section_list : list
+    section_list : list[Section]
         List of NEURON sections to analyze.
 
     Returns
     -------
-    end_sections : list
+    end_sections : list[Section]
         List of terminal sections (sections with no children).
     """
     section_list = list(section_list)
@@ -45,8 +45,8 @@ def tiplist(section_list: list[Section]) -> list[Section]:
                 end_sections.append(sec)
     return end_sections
 
-
-def parentlist(
+# Could probably be done recursively, but this works fine for now
+def get_parent_sections(
     section: Section,
     starts_from_soma: bool = True,
     include_soma: bool = False,
@@ -54,10 +54,11 @@ def parentlist(
 ) -> list[Section]:
     """
     Retrieves all parent sections of a given section.
+    Parents are sections between the given section and the soma/root.
 
     Parameters
     ----------
-    section : h.Section
+    section : Section
         The NEURON section to analyze.
     starts_from_soma : bool, optional
         If True, the list starts from the soma. Default is True.
@@ -68,7 +69,7 @@ def parentlist(
 
     Returns
     -------
-    parent_list : SectionList
+    parent_list : list[Section]
         List of parent sections, including the original section.
     """
 
@@ -90,60 +91,60 @@ def parentlist(
         for sec in reversed(list(parent_list)):
             reversed_list.append(sec)
         parent_list = reversed_list
-    return parent_list
+    return list(parent_list)
 
 
 def section_list_length(
-    cell: Cell, section_list: list[Section], return_array: bool = True
+    cell: Cell, section_list: list[Section], return_list: bool = True
 ) -> tuple[float, list[float]]:
     """
-    Calculates the total and individual lengths of sections in a list.
+    Calculates the total and (optionally) individual lengths of sections in a list.
 
     Parameters
     ----------
     cell : Cell
         The cell instance to check for somatic sections.
-    section_list : SectionList
-        List of NEURON sections to analyze.
-    return_array : bool, optional
-        If True, returns an array of individual section lengths. Default is True.
+    section_list : list[Section]
+        List of NEURON sections to measure.
+    return_list : bool, optional
+        If True, returns a list of individual section lengths. Default is True.
 
     Returns
     -------
     total_length : float
         Total length of all sections in the list.
-    length_array : list, optional
-        Array of individual section lengths (if `return_array` is True).
+    length_list : list, optional
+        List of individual section lengths (if `return_list` is True).
     """
 
     total_length = 0
-    length_array = []
+    length_list = []
     for sec in section_list:
 
         # halves length to measure from soma center
         if sec in cell.somatic:
             total_length += sec.L / 2
-            length_array.append(sec.L / 2)
+            length_list.append(sec.L / 2)
         else:
             total_length += sec.L
-            length_array.append(sec.L)
+            length_list.append(sec.L)
 
-    if return_array:
-        return total_length, length_array
+    if return_list:
+        return total_length, length_list
 
     return total_length
 
 
-def furthest_point(cell: Cell, section_list: list[Section]) -> tuple[float, Segment]:
+def furthest_point(from_sec: Section, section_list: list[Section]) -> tuple[float, Segment]:
     """
     Finds the furthest segment and its distance from the soma.
 
     Parameters
     ----------
-    cell : Cell
-        The cell instance to find the somatic compartment.
-    section_list : SectionList
-        List of NEURON sections to analyze.
+    from_sec : Section
+        The NEURON section to measure distance from.
+    section_list : list[Section]
+        List of NEURON sections to measure to and compare.
 
     Returns
     -------
@@ -157,7 +158,7 @@ def furthest_point(cell: Cell, section_list: list[Section]) -> tuple[float, Segm
     for sec in section_list:
 
         for seg in sec:
-            seg_distance = distance3D(getsegxyz(cell.somatic[0](0.5)), getsegxyz(seg))
+            seg_distance = distance3D(getsegxyz(from_sec(0.5)), getsegxyz(seg))
             if seg_distance > furthest_distance:
                 furthest_distance = seg_distance
                 furthest_seg = seg
@@ -170,8 +171,8 @@ def surface_area(section_list: list[Section]) -> float:
 
     Parameters
     ----------
-    section_list : SectionList
-        List of NEURON sections to analyze.
+    section_list : list[Section]
+        List of NEURON sections to measure.
 
     Returns
     -------
@@ -192,7 +193,7 @@ def getsegxyz(seg: Segment) -> tuple[float, float, float]:
     Parameters
     ----------
     seg : Segment
-        The NEURON segment to analyze.
+        The NEURON segment to determine coordinates for.
 
     Returns
     -------
@@ -219,16 +220,16 @@ def getsegxyz(seg: Segment) -> tuple[float, float, float]:
     return coords
 
 
-def closest_tip(section_list: list[Section], seg: Segment) -> tuple[float, Segment]:
+def closest_terminal_segment(section_list: list[Section], seg: Segment) -> Segment:
     """
-    Returns the closest tip section's terminal segment to a given segment in a section list.
+    Returns the closest terminal section's terminal segment to a given segment in a section list.
     
     Parameters
     ----------
-    section_list : SectionList
-        List of NEURON sections to consider in distance search.
+    section_list : list[Section]
+        List of NEURON sections to find terminal sections to consider in distance search.
     seg : Segment
-        The NEURON segment to find the closest tip to.
+        The NEURON segment to find the closest terminal segment to.
     
     Returns
     -------
@@ -237,7 +238,7 @@ def closest_tip(section_list: list[Section], seg: Segment) -> tuple[float, Segme
     closest_endseg : Segment
         The closest terminal segment object.
     """
-    endsecs = list(tiplist(section_list))
+    endsecs = list(get_terminal_sections(section_list))
     if len(endsecs) == 0:
         raise ValueError("No terminal sections found in the provided section list.")
     closest_endsec = endsecs[0]
@@ -248,7 +249,7 @@ def closest_tip(section_list: list[Section], seg: Segment) -> tuple[float, Segme
     except:
         closest_endsec_dist = float("inf")
     for endsec in endsecs:
-        path_secs = parentlist(endsec)
+        path_secs = get_parent_sections(endsec)
         if seg.sec in path_secs:
             try:
                 endsec_dist = distance3D(getsegxyz(seg), getsegxyz(endsec(0.999999)))
@@ -257,7 +258,7 @@ def closest_tip(section_list: list[Section], seg: Segment) -> tuple[float, Segme
             if endsec_dist < closest_endsec_dist:
                 closest_endsec = endsec
                 closest_endsec_dist = endsec_dist
-    return closest_endsec_dist, closest_endsec(1)
+    return closest_endsec(1)
 
 
 def get_children_secs(
@@ -270,7 +271,7 @@ def get_children_secs(
     ----------
     sec : Section
         The NEURON section to find children of.
-    section_list : SectionList, optional
+    section_list : list[Section], optional
         If provided, only returns children within this list. Default is None.
     
     Returns
@@ -295,7 +296,7 @@ def average_path_length(section_list: list[Section]) -> float:
 
     Parameters
     ----------
-    section_list: SectionList
+    section_list: list[Section]
         list of sections to find paths to the soma within
 
     Returns
@@ -304,9 +305,9 @@ def average_path_length(section_list: list[Section]) -> float:
     """
     total_path_length = 0
     total_path_length = 0
-    end_secs = tiplist(section_list)
+    end_secs = get_terminal_sections(section_list)
     for sec in end_secs:
-        for sec in parentlist(sec):
+        for sec in get_parent_sections(sec):
             length = sec.L
             total_path_length += length
     if len(end_secs) == 0:
@@ -328,7 +329,7 @@ def mep(cell: Cell, section_list: list[Section]) -> float:
     ----------
     cell: Cell
         cell instance to pass along to pj()
-    section_list: SectionList
+    section_list: list[Section]
         sections considered as 'endpoints' of a pathlength
 
     Returns
@@ -350,7 +351,7 @@ def mep(cell: Cell, section_list: list[Section]) -> float:
         ----------
         cell : Cell
             instance of a Cell to pull membrane resistance from
-        section_list: SectionList
+        section_list: list[Section]
             list of sections to calculate electrotonic pathlength
 
         Returns
@@ -381,7 +382,7 @@ def mep(cell: Cell, section_list: list[Section]) -> float:
 
     for sec in sections:
 
-        sec_parentlist = parentlist(sec)
+        sec_parentlist = get_parent_sections(sec)
         pjarray[section_count] = pj(cell, sec_parentlist)
         section_count += 1
 
@@ -401,7 +402,7 @@ def axon_length_to_terminal(
         The cell instance containing the sections.
     seg : Segment
         The segment object for which to calculate the axon length to the terminal.
-    section_list : SectionList
+    section_list : list[Section]
         List of NEURON sections to analyze.
     method : str, optional
         The method to use for calculation. Options are 'plane', 'cartesian', or 'straight'. Default is 'plane'.
@@ -416,7 +417,7 @@ def axon_length_to_terminal(
     closest_endseg : Segment
         The closest terminal segment object.
     """
-    furthest_dist, furthest_seg = furthest_point(cell, section_list)
+    furthest_dist, furthest_seg = furthest_point(cell.somatic[0], section_list)
     if method == "plane":
         distal_line = define_xy_line(
             *get_average_endpoints(cell),
@@ -427,13 +428,13 @@ def axon_length_to_terminal(
             if get_children_secs(seg.sec, section_list=section_list)
             else [seg.sec]
         )
-        closest_dist, closest_endseg = closest_tip(children, seg)
+        closest_endseg = closest_terminal_segment(children, seg)
         axon_length_to_terminal = dist_from_line(
             distal_line, getsegxyz(closest_endseg)[0:2]
         )
 
     elif method == "cartesian":
-        closest_dist, closest_endseg = closest_tip(
+        closest_endseg = closest_terminal_segment(
             get_children_secs(seg.sec, section_list=section_list), seg
         )
         furthest_x, furthest_y, furthest_z = getsegxyz(furthest_seg)
@@ -447,7 +448,7 @@ def axon_length_to_terminal(
         )
 
     elif method == "straight":
-        closest_dist, closest_endseg = closest_tip(
+        closest_endseg = closest_terminal_segment(
             get_children_secs(seg.sec, section_list=section_list), seg
         )
         furthest_x, furthest_y, furthest_z = getsegxyz(furthest_seg)
@@ -526,9 +527,9 @@ def get_average_endpoints(
     ----------
     cell : Cell
         The cell instance containing the sections.
-    sectionlist_1 : SectionList, optional
+    sectionlist_1 : list[Section], optional
         A list of sections to consider for the first set of terminal segments. If None, uses lateral_nofilopodia.
-    sectionlist_2 : SectionList, optional
+    sectionlist_2 : list[Section], optional
         A list of sections to consider for the second set of terminal segments. If None, uses medial_nofilopodia.
 
     Returns
@@ -537,7 +538,7 @@ def get_average_endpoints(
         Two tuples containing the average coordinates (x, y) of the lateral and medial terminal segments, respectively.
     """
     ends_1 = list(
-        tiplist(cell.lateral_nofilopodia if sectionlist_1 is None else sectionlist_1)
+        get_terminal_sections(cell.lateral_nofilopodia if sectionlist_1 is None else sectionlist_1)
     )
     x_1 = 0
     y_1 = 0
@@ -550,7 +551,7 @@ def get_average_endpoints(
     x_2 = 0
     y_2 = 0
     ends_2 = list(
-        tiplist(cell.medial_nofilopodia if sectionlist_2 is None else sectionlist_2)
+        get_terminal_sections(cell.medial_nofilopodia if sectionlist_2 is None else sectionlist_2)
     )
     for end in ends_2:
         x, y, z = getsegxyz(end(0.999))

@@ -9,7 +9,7 @@ import random
 from neuron import h
 from .nrn_types import Section, Segment, Exp2Syn, NetCon, NetStim
 from .cell import Cell
-from .cell_calc import tiplist, parentlist, section_list_length
+from .cell_calc import get_terminal_sections, get_parent_sections, section_list_length
 
 
 class SynapseUnit:
@@ -212,15 +212,15 @@ def innervate_random(
     """
     synapse_groups = []
     for group_num in range(numgroups):
-        ends = list(tiplist(section_list))
+        ends = list(get_terminal_sections(section_list))
         random_end = random.choice(ends)
         # Ensure the chosen path is long enough for the desired number of synapses
         while (
-            section_list_length(cell, parentlist(random_end, starts_from_soma=False))[0]
+            section_list_length(cell, get_parent_sections(random_end, starts_from_soma=False))[0]
             < numsyns * synspace
         ):
             random_end = random.choice(ends)
-        chosen_path_sections = parentlist(random_end, starts_from_soma=False)
+        chosen_path_sections = get_parent_sections(random_end, starts_from_soma=False)
 
         # Pick a random length along the path
         random_length_on_path = random.uniform(

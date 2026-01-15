@@ -1,6 +1,7 @@
 {
     "general": {
-        "logging_level": "ERROR"
+        "logging_level": "DEBUG",
+        "console_level": "INFO"
     },
     "initialization": {
         "filopodia_maximum_length": 15,
