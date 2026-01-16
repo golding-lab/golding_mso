@@ -13,19 +13,13 @@ import pathlib
 from importlib.resources import files
 from logging.handlers import TimedRotatingFileHandler
 from neuron import h
+h.load_file("import3d.hoc") # Load NEURON 3D import file
 
-# Load NEURON 3D import file
-h.load_file("import3d.hoc")
 
-# Import key modules for ease of access
-from .cell import Cell
+
+
 from .config import Config
 from . import utils
-from . import cell_calc
-from . import math_calc
-from . import data
-from . import sims
-from . import syns
 
 pkg_mech_compiled = (utils.get_package_path() / "mechanisms" / "x86_64").exists() or (
     utils.get_package_path() / "mechanisms" / "nrnmech.dll"
@@ -43,11 +37,19 @@ morphologies = utils.get_morphologies()
 mechanisms = utils.get_mechanisms()
 """Dictionary of available mechanism files in the package, keyed by mechanism name."""
 
-config = Config()
-"""Current configuration (dict) loaded from the user's package config file"""
-
 user_pkg_dir = pathlib.Path.home() / ".golding_mso"
 """Path to the user's golding_mso configuration directory."""
+
+user_config = Config(user_pkg_dir)
+"""Current configuration (dict) loaded from the user's package config file"""
+
+from .cell import Cell
+from . import cell_calc
+from . import math_calc
+from . import data
+from . import sims
+from . import syns
+
 
 # Source:
 # https://stackoverflow.com/questions/49049044/python-setup-of-logging-allowing-multiline-strings-logging-infofoo-nbar
@@ -79,7 +81,6 @@ log_formatter = NewLineFormatter(LOGFORMAT, datefmt=DATEFORMAT)
 console_formatter = NewLineFormatter(CONSOLEFORMAT, datefmt=DATEFORMAT)
 
 # Set up logging path for the package
-user_pkg_dir = pathlib.Path.home() / ".golding_mso"
 logger = logging.getLogger(__name__)
 has_log_folder = os.path.isdir(user_pkg_dir / "logs")
 if not has_log_folder:
@@ -90,7 +91,7 @@ if not has_log_folder:
 console_handler = logging.StreamHandler(stream=os.sys.stdout)
 """Console handler for logging output to standard output. Use console_handler.setLevel() to adjust verbosity."""
 console_handler.setLevel(
-    getattr(logging, config.get("general", {}).get("console_level", "INFO"))
+    getattr(logging, user_config.get("general", {}).get("console_level", "INFO"))
 )
 console_handler.setFormatter(console_formatter)
 logging.getLogger().addHandler(console_handler)
@@ -104,6 +105,6 @@ rotate_handler = TimedRotatingFileHandler(
     interval=8,  # Rotate every 8 hours
 )
 """Timed rotating file handler for logging output to a file with rotation. Use rotate_handler.setLevel() or modify config file to adjust"""
-rotate_handler.setLevel(config.get("general", {}).get("logging_level", "DEBUG"))
+rotate_handler.setLevel(user_config.get("general", {}).get("logging_level", "DEBUG"))
 rotate_handler.setFormatter(log_formatter)
 logging.getLogger().addHandler(rotate_handler)

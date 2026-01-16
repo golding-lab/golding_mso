@@ -15,8 +15,6 @@ from shutil import copy, rmtree
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-user_pkg_dir = pathlib.Path.home() / ".golding_mso"
-
 def get_cell_file_paths(*filenames: str) -> list[str]:
     """
     Return a list[str] of filepaths to cell morphology files inside the package's 'cells' directory. If no filenames are provided, it returns all cell files included in the package directory.

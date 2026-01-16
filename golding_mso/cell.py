@@ -9,7 +9,7 @@ from pathlib import Path
 from neuron import h
 
 from .config import Config
-from . import config as pkg_config
+from . import user_config
 
 dill_import = True
 try:
@@ -101,14 +101,14 @@ class Cell:
 
     """
 
-    def __init__(self, cell_file: str, config_override: dict | Config = None, **kwargs) -> None:
+    def __init__(self, cell_file: str, config_override: Config = None, **kwargs) -> None:
         """
 
         Parameters
         ----------
         cell_file : str
             Filepath to a morphology file in .asc format from Neurolucida.
-        config_override : dict | Config, optional
+        config_override : Config, optional
             Overrides configuration with a custom Config or dictionary. Defaults to None.
         """
         self._load_default_values(config_override=config_override, **kwargs)
@@ -232,13 +232,13 @@ class Cell:
                 psections.update({sec: sec.psection()})
             return psections
 
-    def reload_defaults(self, config_override: dict | Config = None) -> None:
+    def reload_defaults(self, config_override: Config = None) -> None:
         """
         Resets the cell's configuration to the default or a provided configuration.
 
         Parameters
         ----------
-        config_override : dict | Config, optional
+        config_override : Config, optional
             Configuration file path or dictionary to load cell parameters from. If None, uses current session's config. Defaults to None.
         """
         self._load_default_values(config_override=config_override)
@@ -999,7 +999,7 @@ class Cell:
         self._define_section_lists(disconnect=kwargs.get("disconnect", True), filopodia_maximum_length=kwargs.get("filopodia_maximum_length", None), filopodia_maximum_diameter=kwargs.get("filopodia_maximum_diameter", None))
         self._set_compartments(compartment_size=kwargs.get("compartment_size", 2))
 
-    def _load_default_values(self, config_override: dict | Config = None, **kwargs) -> None:
+    def _load_default_values(self, config_override: Config = None, **kwargs) -> None:
         """
         Loads default channel attributes and conductance values into the cell instance's attributes (conductances & channels).
         
@@ -1011,7 +1011,7 @@ class Cell:
         if isinstance(config_override, dict):
             use_config = config_override
         else:
-            use_config = pkg_config
+            use_config = user_config
         
         for k, v in use_config["initialization"].items():
             if k in list(kwargs.keys()):

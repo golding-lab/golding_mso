@@ -4,7 +4,6 @@ import logging
 from importlib.resources import path
 from shutil import copy
 
-from . import user_pkg_dir
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +12,30 @@ class Config(dict):
     Configuration class for managing golding_mso package settings.
     """
     
-    path: str = str(user_pkg_dir / "golding_mso_config.json")
-    """Path to the user's golding_mso configuration file."""
-    
-    def __init__(self):
+    def __init__(self, user_path: str = None):
+        """
+        Initialize the Config object by loading the configuration from the specified path or the default user config path
+        Parameters
+        ----------
+        user_path : str, optional
+            The file path to load the configuration from. If None, uses the default user config path
+        """
+        self.user_path = user_path
         super().__init__()
         self.update(self.from_user)
     
+    def rebase(self, new_user_path: str):
+        """
+        Change the user configuration path and reload the configuration.
+
+        Parameters
+        ----------
+        new_user_path : str
+            The new file path to load the configuration from.
+        """
+        self.user_path = new_user_path
+        self.reload(config_path=new_user_path)
+        
     def reload(self, config: dict = None, config_path: str = None):
         """
         Load a configuration from a specified file path.
@@ -61,16 +77,16 @@ class Config(dict):
         with path("golding_mso", "golding_mso_config_default.json") as dcp:
             def_config_path = dcp
         try:
-            if not user_pkg_dir.is_dir():
+            if not self.user_path.is_dir():
                 # Create the user config directory if it does not exist
-                user_pkg_dir.mkdir(parents=True, exist_ok=True)
+                self.user_path.mkdir(parents=True, exist_ok=True)
             copy(
                 def_config_path,
-                user_pkg_dir / "golding_mso_config.json",
+                self.user_path / "golding_mso_config.json",
             )
             copy(
                 def_config_path,
-                user_pkg_dir / "golding_mso_config.json",
+                self.user_path / "golding_mso_config.json",
             )
             logger.info("Default configuration files copied to user config directory.")
         except FileNotFoundError:
@@ -92,7 +108,7 @@ class Config(dict):
         if new_config is None:
             new_config=self
             
-        config_path = user_pkg_dir / "golding_mso_config.json"
+        config_path = self.user_path / "golding_mso_config.json"
         with open(config_path, "w") as f:
             json.dump(new_config, f, indent=4)
         logger.info(f"Configuration saved to {config_path}")
@@ -107,7 +123,7 @@ class Config(dict):
         dict:
             The user's configuration as a dictionary.
         """
-        config_path = user_pkg_dir / "golding_mso_config.json"
+        config_path = self.user_path / "golding_mso_config.json"
         try:
             with open(config_path, "r") as f:
                 user_config = json.load(f)
