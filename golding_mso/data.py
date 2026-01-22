@@ -167,9 +167,9 @@ def fit_gaussian_to_itd(
 
     Parameters
     ----------
-    delay_values : np.ndarray
+    delay_values : list[float]
         Array of delay values.
-    probabilities : np.ndarray
+    probabilities : list[float]
         Array of probabilities.
 
     Returns
@@ -202,9 +202,9 @@ def find_centroid(data: list[float], delay_values: list[float]) -> float:
 
     Parameters
     ----------
-    data : np.ndarray
+    data : list[float]
         Array of data values.
-    delay_values : np.ndarray
+    delay_values : list[float]
         Array of delay values.
 
     Returns

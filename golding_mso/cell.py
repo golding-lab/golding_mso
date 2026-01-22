@@ -701,10 +701,10 @@ class Cell:
 
         Parameters
         ----------
-        minimum_length : float
-            Minimum length (µm) of a section allowed before being deemed filopodia.
-        minimum_diameter : float
-            Minimum diameter (µm) of a section allowed before being deemed filopodia.
+        filopodia_maximum_length : float
+            Maximum length (µm) of a section deemed filopodia.
+        filopodia_maximum_diameter : float
+            Maximum diameter (µm) of a section deemed filopodia.
         disconnect : bool, optional
             Whether to electrically disconnect filopodia from the cell. Default is True.
         """
