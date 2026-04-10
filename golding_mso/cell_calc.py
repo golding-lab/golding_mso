@@ -389,7 +389,34 @@ def mep(cell: Cell, section_list: list[Section]) -> float:
     mep = np.sum(pjarray) / len(pjarray)
     return mep
 
+def find_nonoverlapping_paths(section_list: list[Section]) -> list[list[Section]]:
+    """Finds non-overlapping paths from terminal sections to the soma in a section list.
+    Paths are defined as non-overlapping if they do not share any sections.
+    
+    Parameters
+    ----------
+    section_list : list[Section]
+        List of sections to analyze for non-overlapping paths.
 
+    Returns
+    -------
+    paths : dict[Section, list[Section]]
+        Dictionary mapping terminal sections to their non-overlapping paths.
+    """
+    paths = {}
+    end_secs = get_terminal_sections(section_list)
+    for sec in end_secs:
+        path = get_parent_sections(sec)
+        paths[sec] = path
+    for end_sec, path in paths.items():
+        for end_sec_check, path_check in paths.items():
+            for sec in path:
+                if sec in path_check and end_sec != end_sec_check:
+                    if axon_length_along(sec(0), end_sec_check(1)) > axon_length_along(sec(0), end_sec(1)):
+                        paths[end_sec_check].remove(sec)
+                    else:
+                        path.remove(sec)
+    return paths
 def axon_length_to_terminal(
     cell: Cell, seg: Segment, section_list: list[Section], method="plane"
 ):
