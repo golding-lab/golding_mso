@@ -107,8 +107,13 @@ class Config(dict):
         
         if new_config is None:
             new_config=self
-            
-        config_path = self.user_path / "golding_mso_config.json"
+        if self.user_path.is_dir():
+            config_path = self.user_path / "golding_mso_config.json"
+        else: 
+            logger.error(
+                f"User config path '{self.user_path}' is not a directory. Cannot save configuration. Please check the path and try again."
+            )
+            return
         with open(config_path, "w") as f:
             json.dump(new_config, f, indent=4)
         logger.info(f"Configuration saved to {config_path}")
@@ -123,6 +128,11 @@ class Config(dict):
         dict:
             The user's configuration as a dictionary.
         """
+        if self.user_path is None:
+            logger.warning(
+                "User config path is not set. Loading default configuration. Set user_path to load user configuration."
+            )
+            return self.from_default
         config_path = self.user_path / "golding_mso_config.json"
         try:
             with open(config_path, "r") as f:
