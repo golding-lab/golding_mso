@@ -43,6 +43,9 @@ user_pkg_dir = pathlib.Path.home() / ".golding_mso"
 user_config = Config(user_pkg_dir)
 """Current configuration (dict) loaded from the user's package config file"""
 
+anf_spikes_dir = utils.get_package_path() / "anf_spikes" if (utils.get_package_path() / "anf_spikes").exists() else None
+"""Path to the directory containing ANF spike time data, if it exists in the package."""
+
 from .cell import Cell
 from . import cell_calc
 from . import math_calc

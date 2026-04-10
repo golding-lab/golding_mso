@@ -245,3 +245,14 @@ def add_morphology(morph_file_path: str):
     dest_path = cell_dir / pathlib.Path(morph_file_path).name
     copy(morph_file_path, dest_path)
     logger.info(f"Morphology file {morph_file_path} copied to package @ {dest_path}")
+
+def load_spike_times(freq, anf_num):
+    if not (get_package_path() / "anf_spikes").exists():
+        raise FileNotFoundError("ANF spike time data directory not found in package.")
+    import numpy as np
+    import pickle
+    raw = pickle.load(open(f'{get_package_path() / "anf_spikes" / f"spikes_{freq}hz.pkl"}', 'rb'))
+    return [
+            np.array([s for s in fiber]) * 1000
+            for fiber in raw[freq]
+        ][:anf_num + 1]
