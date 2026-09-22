@@ -1,0 +1,7 @@
+dill
+numpy
+scipy
+pandas
+neuron
+myst_parser
+furo

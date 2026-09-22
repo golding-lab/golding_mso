@@ -1,0 +1,406 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cell &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="data" href="data.html" />
+    <link rel="prev" title="math_calc" href="calc_math.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calc_math.html">math_calc</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cell</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell.Cell"><code class="docutils literal notranslate"><span class="pre">Cell</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.assign_channels"><code class="docutils literal notranslate"><span class="pre">assign_channels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.attach_axon"><code class="docutils literal notranslate"><span class="pre">attach_axon()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.detach_axon"><code class="docutils literal notranslate"><span class="pre">detach_axon()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.move"><code class="docutils literal notranslate"><span class="pre">move()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.psection"><code class="docutils literal notranslate"><span class="pre">psection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.restore_state"><code class="docutils literal notranslate"><span class="pre">restore_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.set_artificial_resting_potential"><code class="docutils literal notranslate"><span class="pre">set_artificial_resting_potential()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.store_state"><code class="docutils literal notranslate"><span class="pre">store_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.topology"><code class="docutils literal notranslate"><span class="pre">topology()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.unassign_channels"><code class="docutils literal notranslate"><span class="pre">unassign_channels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.input_capacitance"><code class="docutils literal notranslate"><span class="pre">input_capacitance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.input_resistance"><code class="docutils literal notranslate"><span class="pre">input_resistance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.membrane_resistance"><code class="docutils literal notranslate"><span class="pre">membrane_resistance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.potential_threshold"><code class="docutils literal notranslate"><span class="pre">potential_threshold</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.resting_potential"><code class="docutils literal notranslate"><span class="pre">resting_potential</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.rheobase"><code class="docutils literal notranslate"><span class="pre">rheobase</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.surface_area"><code class="docutils literal notranslate"><span class="pre">surface_area</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.Cell.time_constant"><code class="docutils literal notranslate"><span class="pre">time_constant</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.cell.ParamDict"><code class="docutils literal notranslate"><span class="pre">ParamDict</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.cell.ParamDict.convert_to_dict"><code class="docutils literal notranslate"><span class="pre">convert_to_dict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sims.html">sims</a></li>
+<li class="toctree-l1"><a class="reference internal" href="syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cell</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cell.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-golding_mso.cell">
+<span id="cell"></span><h1>cell<a class="headerlink" href="#module-golding_mso.cell" title="Link to this heading"></a></h1>
+<p>This module defines the Cell class for loading and manipulating neuronal morphologies in NEURON.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a neuron cell loaded from a morphology file, with methods for simulation and analysis in NEURON.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">golding_mso</span> <span class="k">as</span> <span class="nn">gmso</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">neuron</span> <span class="kn">import</span> <span class="n">h</span>
+
+<span class="n">mso_cell</span> <span class="o">=</span> <span class="n">gmso</span><span class="o">.</span><span class="n">Cell</span><span class="p">(</span><span class="n">gmso</span><span class="o">.</span><span class="n">morphologies</span><span class="p">[</span><span class="s1">&#39;151124_03&#39;</span><span class="p">])</span>
+<span class="n">mso_cell</span><span class="o">.</span><span class="n">assign_channels</span><span class="p">()</span>
+<span class="n">mso_cell</span><span class="o">.</span><span class="n">attach_axon</span><span class="p">()</span>
+
+<span class="n">stim</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">IClamp</span><span class="p">(</span><span class="n">mso_cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">stim</span><span class="o">.</span><span class="n">amp</span> <span class="o">=</span> <span class="mf">1.3</span>
+<span class="n">stim</span><span class="o">.</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">stim</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">soma_v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">mso_cell</span><span class="o">.</span><span class="n">somatic</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">)</span>
+<span class="n">axon_v</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">mso_cell</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">_ref_v</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Vector</span><span class="p">()</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">_ref_t</span><span class="p">)</span>
+
+<span class="n">h</span><span class="o">.</span><span class="n">finitialize</span><span class="p">(</span><span class="o">-</span><span class="mi">58</span><span class="p">)</span>
+<span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">h</span><span class="o">.</span><span class="n">frecord_init</span><span class="p">()</span>
+<span class="n">h</span><span class="o">.</span><span class="n">continuerun</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">soma_v</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Soma&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">axon_v</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Axon&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (ms)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Membrane Potential (mV)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;MSO Cell Response to Current Injection&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell_file<span class="classifier">str</span></dt><dd><p>Filepath to a morphology file in .asc format from Neurolucida.</p>
+</dd>
+<dt>config_path<span class="classifier">str, optional</span></dt><dd><p>Overrides configuration with a custom config file path. Defaults to None.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.assign_channels">
+<span class="sig-name descname"><span class="pre">assign_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.assign_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.assign_channels" title="Link to this definition"></a></dt>
+<dd><p>Inserts ion channels and sets their properties on specified parts of the cell,
+based on the current cell instance’s ‘channels’ attribute (ParamDict).
+kwargs input are formatted as part_channel_condlabel: conductancevalue.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.attach_axon">
+<span class="sig-name descname"><span class="pre">attach_axon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.attach_axon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.attach_axon" title="Link to this definition"></a></dt>
+<dd><p>Attaches an artificial axon to the soma of the Cell instance.</p>
+<p>The axon morphology is based on Lehnert et al. (2014) and includes a
+tapering initial segment, nodes, and internodes.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.detach_axon">
+<span class="sig-name descname"><span class="pre">detach_axon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.detach_axon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.detach_axon" title="Link to this definition"></a></dt>
+<dd><p>Disconnects the axon from the soma and removes it from the cell.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.move" title="Link to this definition"></a></dt>
+<dd><p>Moves the cell to a new location in 3D space.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>x<span class="classifier">float</span></dt><dd><p>distance to translate or (if relative = False) new x-coordinate.</p>
+</dd>
+<dt>y<span class="classifier">float</span></dt><dd><p>distance to translate or (if relative = False) new y-coordinate.</p>
+</dd>
+<dt>z<span class="classifier">float</span></dt><dd><p>distance to translate or (if relative = False) new z-coordinate.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.psection">
+<span class="sig-name descname"><span class="pre">psection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sections</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.psection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.psection" title="Link to this definition"></a></dt>
+<dd><p>Returns the section properties of the cell, or specific section(s)</p>
+<section id="id2">
+<h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>sec<span class="classifier">h.Section | list[h.Section], optional</span></dt><dd><p>The section(s) to get properties for. If None, returns properties for all sections.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dict</dt><dd><p>A dictionary containing section properties.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.restore_state">
+<span class="sig-name descname"><span class="pre">restore_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.restore_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.restore_state" title="Link to this definition"></a></dt>
+<dd><p>Restores the cell’s mechanisms to a previously stored state.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.set_artificial_resting_potential">
+<span class="sig-name descname"><span class="pre">set_artificial_resting_potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resting_potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.set_artificial_resting_potential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.set_artificial_resting_potential" title="Link to this definition"></a></dt>
+<dd><p>Sets an artificial resting potential with a measured indefinite current injection
+at the soma.</p>
+<section id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>resting_potential<span class="classifier">float</span></dt><dd><p>Desired artificial resting potential.</p>
+</dd>
+<dt>current_limits<span class="classifier">tuple, optional</span></dt><dd><p>Range of DC current sweeping test in nanoamps. Default is (-1, 1).</p>
+</dd>
+<dt>current_step<span class="classifier">float, optional</span></dt><dd><p>Increment of applied DC current in nanoamps. Default is 0.1.</p>
+</dd>
+<dt>current_override<span class="classifier">float, optional</span></dt><dd><p>If provided, directly sets the current without sweeping.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.store_state">
+<span class="sig-name descname"><span class="pre">store_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.store_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.store_state" title="Link to this definition"></a></dt>
+<dd><p>Stores the current state of all mechanisms in the cell for later restoration.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.topology">
+<span class="sig-name descname"><span class="pre">topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subtree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.topology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.topology" title="Link to this definition"></a></dt>
+<dd><p>Prints the topology of the cell in a human-readable format.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.unassign_channels">
+<span class="sig-name descname"><span class="pre">unassign_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#Cell.unassign_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.Cell.unassign_channels" title="Link to this definition"></a></dt>
+<dd><p>Unassigns all channels from the cell, resetting it to its initial state.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.input_capacitance">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_capacitance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.input_capacitance" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>input_capacitance: float</dt><dd><p>The input capacitance (pF).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.input_resistance">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_resistance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.input_resistance" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>input_resistance<span class="classifier">float</span></dt><dd><p>The input resistance (MΩ).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.membrane_resistance">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">membrane_resistance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.membrane_resistance" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>membrane_resistance<span class="classifier">float</span></dt><dd><p>The membrane resistance (MΩ).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.potential_threshold">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">potential_threshold</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.potential_threshold" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>potential_threshold: float</dt><dd><p>The maximum subthreshold depolarization (mV).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.resting_potential">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resting_potential</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.resting_potential" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>resting_potential: float</dt><dd><p>The resting potential (mV).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.rheobase">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rheobase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#golding_mso.cell.Cell.rheobase" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>rheobase: float</dt><dd><p>The current threshold (nA).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.surface_area">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">surface_area</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.surface_area" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>surface_area: float</dt><dd><p>The surface area in square micrometers (µm²).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="golding_mso.cell.Cell.time_constant">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_constant</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#golding_mso.cell.Cell.time_constant" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>time_constant: float</dt><dd><p>The measured cell’s time constant (ms)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="golding_mso.cell.ParamDict">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ParamDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#ParamDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.ParamDict" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<p>A dictionary-like class that resets cell properties when cell attributes are changed,
+to force reevaluating old cell measurements with previous attributes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.cell.ParamDict.convert_to_dict">
+<span class="sig-name descname"><span class="pre">convert_to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/cell.html#ParamDict.convert_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.cell.ParamDict.convert_to_dict" title="Link to this definition"></a></dt>
+<dd><p>Returns a dictionary representation of the ParamDict, recursively if necessary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="calc_math.html" class="btn btn-neutral float-left" title="math_calc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data.html" class="btn btn-neutral float-right" title="data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

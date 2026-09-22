@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sims &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="syns" href="syns.html" />
+    <link rel="prev" title="data" href="data.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">sims</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.compute_propagation_test_difference"><code class="docutils literal notranslate"><span class="pre">compute_propagation_test_difference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.find_compensated_cond"><code class="docutils literal notranslate"><span class="pre">find_compensated_cond()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.get_attenuation_values"><code class="docutils literal notranslate"><span class="pre">get_attenuation_values()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.indiv_syn_test"><code class="docutils literal notranslate"><span class="pre">indiv_syn_test()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.itd_test_sweep"><code class="docutils literal notranslate"><span class="pre">itd_test_sweep()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.propagation_test"><code class="docutils literal notranslate"><span class="pre">propagation_test()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.syn_place"><code class="docutils literal notranslate"><span class="pre">syn_place()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.sims.syn_test"><code class="docutils literal notranslate"><span class="pre">syn_test()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="syns.html">syns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">sims</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/sims.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-golding_mso.sims">
+<span id="sims"></span><h1>sims<a class="headerlink" href="#module-golding_mso.sims" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.compute_propagation_test_difference">
+<span class="sig-name descname"><span class="pre">compute_propagation_test_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_site</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synapse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'voltage'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#compute_propagation_test_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.compute_propagation_test_difference" title="Link to this definition"></a></dt>
+<dd><p>Compute the difference between rec_site and synapse data using a provided function.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>rec_site<span class="classifier">dict</span></dt><dd><p>Dictionary containing ‘maxv’, ‘maxt’, and ‘restv’ for the recording site.</p>
+</dd>
+<dt>synapse<span class="classifier">dict</span></dt><dd><p>Dictionary containing ‘maxv’, ‘maxt’, and ‘restv’ for the synapse.</p>
+</dd>
+<dt>func<span class="classifier">function</span></dt><dd><p>Function to apply to the max voltage or time values.</p>
+</dd>
+<dt>which<span class="classifier">str, optional</span></dt><dd><p>Specifies whether to compute for ‘voltage’ or ‘time’. Default is ‘voltage’.</p>
+</dd>
+<dt>**kwargs<span class="classifier">dict</span></dt><dd><p>Additional keyword arguments to pass to the function.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section_data: list</dt><dd><p>List of computed values for section based on the provided function.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.find_compensated_cond">
+<span class="sig-name descname"><span class="pre">find_compensated_cond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_maxv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-55.196</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resting_potential</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-61.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursion_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursion_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#find_compensated_cond"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.find_compensated_cond" title="Link to this definition"></a></dt>
+<dd><p>Recursively adjusts synaptic conductance (gmax) to achieve a desired max voltage.</p>
+<section id="id1">
+<h2>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance to use for the simulation.</p>
+</dd>
+<dt>seg<span class="classifier">Segment   </span></dt><dd><p>The segment where the synapse is located.</p>
+</dd>
+<dt>maxv<span class="classifier">float</span></dt><dd><p>The maximum voltage recorded from the initial simulation.</p>
+</dd>
+<dt>desired_maxv<span class="classifier">float</span></dt><dd><p>The target maximum voltage to achieve.</p>
+</dd>
+<dt>max_val<span class="classifier">float, optional</span></dt><dd><p>Doesn’t do anything really…
+Default is -55.196.</p>
+</dd>
+<dt>original_gmax<span class="classifier">float, optional</span></dt><dd><p>The initial conductance value to start with.
+Default is 0.005.</p>
+</dd>
+<dt>tolerance<span class="classifier">float, optional</span></dt><dd><p>The acceptable error range for the maximum voltage.
+Default is 0.1.</p>
+</dd>
+<dt>resting_potential<span class="classifier">float, optional</span></dt><dd><p>The resting potential of the cell.
+Default is -61.7.</p>
+</dd>
+<dt>recursion_limit<span class="classifier">int, optional</span></dt><dd><p>The maximum number of recursive calls allowed.
+Default is 20.</p>
+</dd>
+<dt>recursion_count<span class="classifier">int, optional</span></dt><dd><p>The current recursion depth.
+Default is 0.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>new_gmax: float</dt><dd><p>The adjusted conductance value that achieves the desired maximum voltage.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.get_attenuation_values">
+<span class="sig-name descname"><span class="pre">get_attenuation_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sectionlist1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sectionlist2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_fiber_gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.037</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#get_attenuation_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.get_attenuation_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.indiv_syn_test">
+<span class="sig-name descname"><span class="pre">indiv_syn_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synapse_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#indiv_syn_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.indiv_syn_test" title="Link to this definition"></a></dt>
+<dd><p>Activates each synapse individually in a given list and, for each synapse, records the
+max voltages and time at those voltages at the recording site and the synapse site</p>
+<section id="id3">
+<h2>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell: Cell</dt><dd><p>Cell instance to pull stabilization_time variable to use.</p>
+</dd>
+<dt>synapse_list: list[Exp2Syn]</dt><dd><p>list of synapse NEURON point processes to activate.</p>
+</dd>
+<dt>rec_section: Section</dt><dd><p>Section to record from for the non-synapse compartment measurements.
+Records from center of given section.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>recordings: dict</dt><dd><p>Dictionary with keys ‘rec_site’ and ‘syn’, each containing dicts for ‘maxv’, ‘maxt’, and ‘restv’.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.itd_test_sweep">
+<span class="sig-name descname"><span class="pre">itd_test_sweep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_sections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stable_sections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">innervation_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axon_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_fiber_gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.037</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inhibition</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inh_timing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inh_fiber_gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.022</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record_axon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">itd_vals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#itd_test_sweep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.itd_test_sweep" title="Link to this definition"></a></dt>
+<dd><p>Perform ITD (Interaural Time Difference) tests on a given cell.</p>
+<section id="id5">
+<h2>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell instance to be tested.</p>
+</dd>
+<dt>section_list_1<span class="classifier">list</span></dt><dd><p>List of polar branches for the first section.</p>
+</dd>
+<dt>section_list_2<span class="classifier">list</span></dt><dd><p>List of polar branches for the second section.</p>
+</dd>
+<dt>innervation_pattern<span class="classifier">str</span></dt><dd><p>Pattern for innervation (‘random’, ‘total’).</p>
+</dd>
+<dt>axon_speed<span class="classifier">float, optional</span></dt><dd><p>The speed of axonal propagation (in m/s). Default is 1.</p>
+</dd>
+<dt>cycles<span class="classifier">int, optional</span></dt><dd><p>The number of netstim cycles. Default is 1.</p>
+</dd>
+<dt>interval<span class="classifier">float, optional</span></dt><dd><p>The time between netstim cycles. Default is 1.</p>
+</dd>
+<dt>exc_fiber_gmax<span class="classifier">float, optional</span></dt><dd><p>The maximum conductance for excitatory fibers. Default is 0.037.</p>
+</dd>
+<dt>inhibition<span class="classifier">bool, optional</span></dt><dd><p>Whether to include inhibition in the test. Default is False.</p>
+</dd>
+<dt>inh_timing<span class="classifier">float, optional</span></dt><dd><p>The delay for inhibition (in ms). Default is -0.32.</p>
+</dd>
+<dt>inh_fiber_gmax<span class="classifier">float, optional</span></dt><dd><p>The maximum conductance for inhibitory fibers. Default is 0.022.</p>
+</dd>
+<dt>threshold<span class="classifier">float, optional</span></dt><dd><p>The threshold for spike detection. Default is 0.</p>
+</dd>
+<dt>relative_threshold<span class="classifier">bool, optional</span></dt><dd><p>Whether to use a threshold relative to cell’s resting potential. Default is True.</p>
+</dd>
+<dt>record_axon<span class="classifier">bool, optional</span></dt><dd><p>Whether to record axonal activity. Default is False.</p>
+</dd>
+<dt>itd_vals<span class="classifier">list, optional</span></dt><dd><p>List of ITD values to test. Default is None.</p>
+</dd>
+<dt>traces<span class="classifier">bool, optional</span></dt><dd><p>Whether to record traces. Default is False.</p>
+</dd>
+<dt>syn_space<span class="classifier">float, optional</span></dt><dd><p>Space between each synapse in a group. Ignored if innervation_pattern is ‘total’.</p>
+</dd>
+<dt>num_syn<span class="classifier">int, optional</span></dt><dd><p>Number of synapses in each group. Ignored if innervation_pattern is ‘total’.</p>
+</dd>
+<dt>num_fiber<span class="classifier">int, optional</span></dt><dd><p>Number of axon fibers (or synapse groups) innervating each list. Ignored if innervation_pattern is ‘total’.</p>
+</dd>
+<dt>**kwargs<span class="classifier">dict</span></dt><dd><p>Additional keyword arguments.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>results</dt><dd><p>Results of the ITD test sweep {spike_counts, traces, itd_vals}.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.propagation_test">
+<span class="sig-name descname"><span class="pre">propagation_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#propagation_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.propagation_test" title="Link to this definition"></a></dt>
+<dd><p>Tests synapses at every segment and returns time at max depolarization.</p>
+<section id="id7">
+<h2>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell: Cell</dt><dd><p>Cell instance to pass to syntest_max_voltage</p>
+</dd>
+<dt>sectionlist: object</dt><dd><p>sectionlist (from Cell instance) to place synapses on</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>prop_data: list[dict[str,dict[str,list]]]</dt><dd><p>list[(“rec_site”/”syn”):(“maxv”/”maxt”):[list of max voltage or their time value]]</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.syn_place">
+<span class="sig-name descname"><span class="pre">syn_place</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.271</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.271</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syn_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#syn_place"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.syn_place" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.sims.syn_test">
+<span class="sig-name descname"><span class="pre">syn_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_lists</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numsyn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synspace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axonspeed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numtrial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fiber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.037</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">release_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">innervation_pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/sims.html#syn_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.sims.syn_test" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data.html" class="btn btn-neutral float-left" title="data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="syns.html" class="btn btn-neutral float-right" title="syns" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

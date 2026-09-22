@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>syns &mdash; GoldingMSO 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils" href="utils.html" />
+    <link rel="prev" title="sims" href="sims.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GoldingMSO
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="calc_cell.html">cell_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="calc_math.html">math_calc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell.html">cell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sims.html">sims</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">syns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.SynapseUnit"><code class="docutils literal notranslate"><span class="pre">SynapseUnit</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.syns.SynapseUnit.create_netcon"><code class="docutils literal notranslate"><span class="pre">create_netcon()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.syns.SynapseUnit.create_netstim"><code class="docutils literal notranslate"><span class="pre">create_netstim()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.syns.SynapseUnit.create_syn"><code class="docutils literal notranslate"><span class="pre">create_syn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.syns.SynapseUnit.destroy"><code class="docutils literal notranslate"><span class="pre">destroy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#golding_mso.syns.SynapseUnit.reroll_firing"><code class="docutils literal notranslate"><span class="pre">reroll_firing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.create_synunit"><code class="docutils literal notranslate"><span class="pre">create_synunit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.innervate_points"><code class="docutils literal notranslate"><span class="pre">innervate_points()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.innervate_random"><code class="docutils literal notranslate"><span class="pre">innervate_random()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.innervate_total"><code class="docutils literal notranslate"><span class="pre">innervate_total()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#golding_mso.syns.syn_path_place"><code class="docutils literal notranslate"><span class="pre">syn_path_place()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Index:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GoldingMSO</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">syns</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/syns.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-golding_mso.syns">
+<span id="syns"></span><h1>syns<a class="headerlink" href="#module-golding_mso.syns" title="Link to this heading"></a></h1>
+<p>This module provides classes and functions for creating and managing synaptic units (Exp2Syn, Netcon &amp; Netstim)
+in NEURON simulations, including random and path-based innervation of cell sections.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SynapseUnit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a synaptic unit consisting of a Exp2Syn, NetStim, and NetCon on a given segment.
+Handles creation and management of synaptic parameters and firing probability.</p>
+<p>Initialize a SynapseUnit on a given segment. 
+A Synapse consists of an Exp2Syn synapse, a NetStim for stimulation, and a NetCon to connect them.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>segment<span class="classifier">Segment </span></dt><dd><p>The NEURON segment to place the synapse on.</p>
+</dd>
+<dt>**kwargs: </dt><dd><p>Optional parameters for synapse and stimulation properties.
+firing_probability (float): Probability the synapse will fire (default 1.0).
+start (float): Start time for NetStim (default 0).
+tau1, tau2, e, number, interval, noise, gmax, delay: Passed to respective NEURON objects.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit.create_netcon">
+<span class="sig-name descname"><span class="pre">create_netcon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit.create_netcon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit.create_netcon" title="Link to this definition"></a></dt>
+<dd><p>Create and configure a NetCon connecting NetStim to the synapse.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>**kwargs:</dt><dd><p>gmax (weight), delay (optional connection parameters).</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>NetCon: </dt><dd><p>The created NetCon object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit.create_netstim">
+<span class="sig-name descname"><span class="pre">create_netstim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit.create_netstim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit.create_netstim" title="Link to this definition"></a></dt>
+<dd><p>Create and configure a NetStim for this synapse.</p>
+<section id="id2">
+<h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>**kwargs:</dt><dd><p>number, interval, noise (optional stimulation parameters).</p>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h3>Returns<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>NetStim: </dt><dd><p>The created NetStim object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit.create_syn">
+<span class="sig-name descname"><span class="pre">create_syn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit.create_syn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit.create_syn" title="Link to this definition"></a></dt>
+<dd><p>Create and configure an Exp2Syn synapse on the segment.</p>
+<section id="id4">
+<h3>Parameters<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>**kwargs:</dt><dd><p>tau1, tau2, e (optional synaptic parameters).</p>
+</dd>
+</dl>
+</section>
+<section id="id5">
+<h3>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Exp2Syn: </dt><dd><p>The created synapse object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit.destroy">
+<span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit.destroy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit.destroy" title="Link to this definition"></a></dt>
+<dd><p>Destroy the synapse unit by deleting the synapse, netstim, and netcon objects.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="golding_mso.syns.SynapseUnit.reroll_firing">
+<span class="sig-name descname"><span class="pre">reroll_firing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#SynapseUnit.reroll_firing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.SynapseUnit.reroll_firing" title="Link to this definition"></a></dt>
+<dd><p>Reroll the firing probability of the synapse unit and update NetStim start time.</p>
+<section id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>**kwargs:</dt><dd><p>firing_probability (float, optional): New probability to use.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.syns.create_synunit">
+<span class="sig-name descname"><span class="pre">create_synunit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segment</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#create_synunit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.create_synunit" title="Link to this definition"></a></dt>
+<dd><p>Helper function to create a SynapseUnit on a given segment.</p>
+<section id="id7">
+<h2>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>segment<span class="classifier">Segment</span></dt><dd><p>The NEURON segment to place the synapse on.</p>
+</dd>
+<dt>**kwargs: </dt><dd><p>Passed to SynapseUnit constructor.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>SynapseUnit: </dt><dd><p>The created SynapseUnit object.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.syns.innervate_points">
+<span class="sig-name descname"><span class="pre">innervate_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">segments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#innervate_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.innervate_points" title="Link to this definition"></a></dt>
+<dd><p>Create SynapseUnits for each provided segment.</p>
+<section id="id9">
+<h2>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>*segments<span class="classifier">list[Segment]</span></dt><dd><p>Segments to innervate.</p>
+</dd>
+<dt>**kwargs: </dt><dd><p>Passed to SynapseUnit constructor.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>list[SynapseUnit]: </dt><dd><p>List of created SynapseUnit objects.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.syns.innervate_random">
+<span class="sig-name descname"><span class="pre">innervate_random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numgroups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numsyns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#innervate_random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.innervate_random" title="Link to this definition"></a></dt>
+<dd><p>Randomly innervate a cell with groups of SynapseUnits along random paths.</p>
+<section id="id11">
+<h2>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>cell<span class="classifier">Cell</span></dt><dd><p>The cell to innervate.</p>
+</dd>
+<dt>section_list<span class="classifier">list[Section]</span></dt><dd><p>List of NEURON Section objects.</p>
+</dd>
+<dt>numgroups<span class="classifier">int</span></dt><dd><p>Number of synapse groups to create.</p>
+</dd>
+<dt>numsyns<span class="classifier">int</span></dt><dd><p>Number of synapses per group.</p>
+</dd>
+<dt>synspace<span class="classifier">float</span></dt><dd><p>Minimum spacing between synapses.</p>
+</dd>
+<dt>**kwargs:</dt><dd><p>Passed to SynapseUnit constructor.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h2>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>list[list[SynapseUnit]]:</dt><dd><p>List of groups, each a list of SynapseUnit objects.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.syns.innervate_total">
+<span class="sig-name descname"><span class="pre">innervate_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#innervate_total"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.innervate_total" title="Link to this definition"></a></dt>
+<dd><p>Create SynapseUnits for every segment in the provided list of sections.</p>
+<section id="id13">
+<h2>Parameters<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>section_list<span class="classifier">list[Section]</span></dt><dd><p>List of NEURON Section objects.</p>
+</dd>
+<dt>**kwargs: </dt><dd><p>Passed to SynapseUnit constructor.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h2>Returns<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>list[SynapseUnit]: </dt><dd><p>List of created SynapseUnit objects.</p>
+</dd>
+</dl>
+</section>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="golding_mso.syns.syn_path_place">
+<span class="sig-name descname"><span class="pre">syn_path_place</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">locations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.27</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.271</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/golding_mso/syns.html#syn_path_place"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#golding_mso.syns.syn_path_place" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sims.html" class="btn btn-neutral float-left" title="sims" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jared Casarez.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

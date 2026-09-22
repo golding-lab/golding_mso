@@ -1,0 +1,9 @@
+.vscode/*
+**/x86_64
+*.pyc
+__pycache__/
+*.cpp
+*.o
+**/plots.py
+._*
+.notebooks/
