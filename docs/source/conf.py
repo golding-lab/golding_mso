@@ -11,9 +11,9 @@ sys.path.insert(0, os.path.abspath('../../golding_mso/'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'GoldingMSO'
-copyright = '2025, Jared Casarez'
-author = 'Jared Casarez'
-release = '0.0.1'
+copyright = '2025, Golding Lab'
+author = 'Jared Casarez (Golding Lab)'
+release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -6,7 +6,7 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 <br>
 
-<a href="https://golding-mso.readthedocs.io/en/latest/"> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue"> </a>
+<a href="https://golding-mso.readthedocs.io/en/revision-version/"> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue"> </a>
 
 
 
@@ -42,11 +42,11 @@ pip install .
 ```
 
 ## Resources
-- [Documentation](https://golding_mso.readthedocs.io/en/latest/)
+- [Documentation](https://golding_mso.readthedocs.io/en/revision-version/)
 - [Golding Lab Website](https://goldinglab.org)
 - [NEURON Documentation](https://www.neuron.yale.edu/neuron/)
 - [GitHub Repository](https://github.com/golding-lab/golding_mso)
-- [Morphology files](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
+- [Morphology files](https://github.com/golding-lab/golding_mso/blob/initial-version/golding_mso/cells)
 
 <br>
 

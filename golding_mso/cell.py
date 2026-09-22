@@ -9,7 +9,7 @@ from pathlib import Path
 from neuron import h
 
 from .config import Config
-from . import user_config
+from .constants import user_config
 
 dill_import = True
 try:
@@ -694,11 +694,12 @@ class Cell:
 
         ================    ======
         Neurolucida         Python
-        ================    =======
+        ================    ======
         Soma                somatic
         Apical dendrites    lateral
         Dendrites           medial
-
+        ================    =======
+        
         Parameters
         ----------
         filopodia_maximum_length : float

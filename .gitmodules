@@ -1,0 +1,3 @@
+[submodule "golding_mso/anf_spikes"]
+	path = golding_mso/anf_spikes
+	url = https://github.com/golding-lab/anf-spikes
