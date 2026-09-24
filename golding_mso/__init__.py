@@ -9,8 +9,6 @@ analyzing data related to interaural time difference (ITD) processing.
 
 import logging
 import os
-import pathlib
-from importlib.resources import files
 from logging.handlers import TimedRotatingFileHandler
 from neuron import h
 h.load_file("import3d.hoc") # Load NEURON 3D import file

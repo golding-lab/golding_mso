@@ -8,7 +8,7 @@ import neuron
 import numpy as np
 from neuron import h
 from .math_calc import distance3D, dist_from_line, define_xy_line
-from .nrn_types import Section, Segment, Exp2Syn, NetCon, NetStim
+from .nrn_types import Section, Segment
 from .cell import Cell
 
 logger = logging.getLogger(__name__)

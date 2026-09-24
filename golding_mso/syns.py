@@ -10,7 +10,6 @@ from neuron import h
 from .nrn_types import Section, Segment, Exp2Syn, NetCon, NetStim
 from .cell import Cell
 from .cell_calc import get_terminal_sections, get_parent_sections, section_list_length
-from .math_calc import distance3D
 
 
 class SynapseTerminal:
@@ -89,14 +88,14 @@ class SynapseTerminal:
         self.set_firing_times()
         return self.netcon
 
-    def set_firing_times(self, firing_times: list[float] = None) -> None:
+    def set_firing_times(self, firing_times: list[float]|None = None) -> None:
         """
         Set specific firing times for the synapse unit and update NetCon to use VecStim.
 
         Parameters
         ----------
-        firing_times : list[float]
-            List of times at which the synapse should fire.
+        firing_times : list[float]|None
+            List of times at which the synapse should fire. If None, the synapse will use its instance's firing times.
         """
         firing_times = firing_times if firing_times is not None else self.firing_times
         self.firing_times = firing_times
@@ -117,10 +116,10 @@ class SynapseTerminal:
         """
         gmax = self.netcon.weight[0]
         delay = self.netcon.delay
-        self.netcon = h.NetCon(self.netstim, self.syn)
+        self.netcon = h.NetCon(self.fake_cell, self.syn)
         self.netcon.weight[0] = gmax
         self.netcon.delay = delay
-        self.firing_times = None
+        self.firing_times = [0.0]
 
     def get_components(self) -> tuple[Exp2Syn, NetStim, NetCon]:
         """
@@ -128,10 +127,10 @@ class SynapseTerminal:
 
         Returns
         -------
-        tuple[Exp2Syn, NetStim, NetCon]:
-            The synapse, netstim, and netcon objects.
+        tuple[Exp2Syn, VecStim, NetCon]:
+            The synapse, fake presynaptic cell (VecStim), and netcon objects.
         """
-        return self.syn, self.netstim, self.netcon
+        return self.syn, self.fake_cell, self.netcon
 
     def __repr__(self) -> str:
         """
@@ -144,7 +143,6 @@ class SynapseTerminal:
         Destroy the synapse unit by deleting the synapse, netstim, and netcon objects.
         """
         del self.syn
-        del self.netstim
         del self.netcon
 
     @property
@@ -180,14 +178,14 @@ class SynapseFiber:
             syn_terminal.set_firing_times(self.shared_firing_times)
             if isinstance(syn_terminal, StochasticSynapseTerminal) and self.rzero is not None:
                 syn_terminal.vesicle_pool.rzero = self.rzero / len(self.synapse_terminals) if self.synapse_terminals else self.rzero
-    def set_firing_times(self, firing_times: list[float] = None) -> None:
+    def set_firing_times(self, firing_times: list[float]|None = None) -> None:
         """
         Set specific firing times for the synapse unit and update NetCon to use VecStim.
 
         Parameters
         ----------
-        firing_times : list[float]
-            List of times at which the synapse should fire.
+        firing_times : list[float]|None
+            List of times at which the synapse should fire. If None, the synapse will use its own instance's firing times.
         """
         firing_times = firing_times if firing_times is not None else self.shared_firing_times
         self.shared_firing_times = firing_times
@@ -274,7 +272,7 @@ class StochasticSynapseTerminal(SynapseTerminal):
         self._cvec = h.Vector(self.cond_values)
         self.cond_vec = self._cvec.play(self.netcon._ref_weight[0], self._tvec)
         
-    def set_firing_times(self, firing_times: list[float] = None) -> None:
+    def set_firing_times(self, firing_times: list[float]|None = None) -> None:
         """Override to set firing times and configure the NetCon to use the stochastic vesicle pool."""
         self.firing_times = firing_times if firing_times is not None else self.firing_times
         self.firing_times = np.array(self.firing_times)
@@ -313,7 +311,7 @@ def innervate_total(section_list: list[Section], **kwargs) -> list[SynapseTermin
     return syn_units
 
 
-def innervate_points(*segments: list[Segment], **kwargs) -> list[SynapseTerminal]:
+def innervate_points(*segments: Segment, **kwargs) -> list[SynapseTerminal]:
     r"""
     Create SynapseTerminals for each provided segment.
 
@@ -394,7 +392,7 @@ def innervate_random(
             )
         chosen_length_on_path = random_length_on_path
         chosen_path_lengths = section_list_length(
-            cell, chosen_path_sections, return_array=True
+            cell, chosen_path_sections, return_list=True
         )[1]
 
         # Determine the locations for synapse placement

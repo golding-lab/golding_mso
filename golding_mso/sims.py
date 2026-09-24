@@ -3,12 +3,11 @@ Module for running simulations (propagation, ITD, etc.) on MSO models.
 """
 
 import logging
-import math
-import numpy as np
 import random
-from .nrn_types import Section, Segment, Exp2Syn
+import numpy as np
 from collections.abc import Callable
 from neuron import h
+from .nrn_types import Section, Segment
 from .cell import Cell
 from .cell_calc import (
     find_nonoverlapping_paths,
@@ -20,16 +19,12 @@ from .cell_calc import (
     furthest_point,
     section_list_length,
     distance3D,
-    axon_length_along,
-    axon_length_to_terminal,
 )
 from .syns import (
     SynapseFiber,
     SynapseTerminal,
     innervate_total,
-    innervate_random,
     innervate_points,
-    lookup_syns_by_section,
     syn_path_place,
 )
 
@@ -47,7 +42,7 @@ def propagation_test(
     Parameters
     ----------
     cell: Cell
-        Cell instance to pass to syntest_max_voltage
+        Cell instance to pass to indiv_syn_test.
     section_list: list[Section]
         sectionlist (from Cell instance) to place synapses on
 
@@ -56,21 +51,16 @@ def propagation_test(
     list[dict[str, dict[str, list[float]]]]
         List of dictionaries containing max voltage and time data for each section.
     """
-    logger.debug("Starting propagation_test")
-    py_sections = list(section_list)  # convert SectionList() to python list for len()
+    sections = list(section_list)  # convert SectionList() to a python list for len()
+    logger.debug("Starting propagation_test over %d sections", len(sections))
     propagation_data = []
-    for section_index, section in enumerate(section_list):
-        # Progress bar update placeholder
+    for section_index, section in enumerate(sections, start=1):
         logger.debug(
-            "Processing section: %s, %s of %s",
-            section.name(),
-            section_index + 1,
-            len(py_sections),
+            "Processing section: %s, %s of %s", section.name(), section_index, len(sections)
         )
-        synlist = innervate_total([section])  # makes list of synapses for synlist_test
-        max_data = indiv_syn_test(cell, synlist, cell.somatic[0], **kwargs)
-        propagation_data.append(max_data)
-    # Adds each max voltage and time value to created 2d list: [section][seg time/voltage]
+        synapses = innervate_total([section])  # one synapse per segment in the section
+        propagation_data.append(indiv_syn_test(cell, synapses, cell.somatic[0], **kwargs))
+    logger.debug("Completed propagation_test")
     return propagation_data
 
 
@@ -102,17 +92,13 @@ def compute_propagation_test_difference(
     section_data: list
         List of computed values for section based on the provided function.
     """
-    if which == "voltage":
-        key = "maxv"
-    elif which == "time":
-        key = "maxt"
-    else:
+    key = {"voltage": "maxv", "time": "maxt"}.get(which)
+    if key is None:
         raise ValueError("Invalid value for 'which'. Use 'voltage' or 'time'.")
-
-    section_data = []
-    for idx in range(len(rec_site[key])):
-        section_data.append(func(rec_site[key][idx], synapse[key][idx], **kwargs))
-    return section_data
+    return [
+        func(rec_val, syn_val, **kwargs)
+        for rec_val, syn_val in zip(rec_site[key], synapse[key])
+    ]
 
 
 def find_compensated_cond(
@@ -124,10 +110,9 @@ def find_compensated_cond(
     tolerance: float = 0.1,
     resting_potential: float = -61.7,
     recursion_limit: int = 20,
-    recursion_count: int = 0,
 ) -> float:
     """
-    Recursively adjusts synaptic conductance (gmax) to achieve a desired max voltage.
+    Iteratively adjusts synaptic conductance (gmax) to achieve a desired max voltage.
 
     Parameters
     ----------
@@ -149,51 +134,39 @@ def find_compensated_cond(
         The resting potential of the cell.
         Default is -61.7.
     recursion_limit : int, optional
-        The maximum number of recursive calls allowed.
+        The maximum number of adjustment attempts allowed.
         Default is 20.
-    recursion_count : int, optional
-        The current recursion depth.
-        Default is 0.
 
     Returns
     -------
-    new_gmax: float
+    gmax: float
         The adjusted conductance value that achieves the desired maximum voltage.
     """
-    percent_change = (desired_maxv - resting_potential) / (maxv - resting_potential)
-    new_gmax = original_gmax * (percent_change)
-    synapse_list = innervate_points(seg)
-    data = indiv_syn_test(cell, [synapse_list[0]], cell.somatic[0], gmax=new_gmax)
-    error = abs(desired_maxv - data["rec_site"]["maxv"][0])
-    if error > tolerance:
-        logger.debug(f"Conductance ({new_gmax}) off by {error}")
-        if recursion_count > recursion_limit:
-            logger.warning(f"Recursion limit reached. Ending with gmax: {new_gmax}")
-            for syn in synapse_list:
-                syn.destroy()
-            return new_gmax
-        for syn in synapse_list:
-            syn.destroy()
-        return find_compensated_cond(
-            cell,
-            seg,
-            data["rec_site"]["maxv"][0],
-            desired_maxv,
-            original_gmax=new_gmax,
-            recursion_count=recursion_count + 1,
-            tolerance=tolerance,
-            recursion_limit=recursion_limit,
-            resting_potential=data["rec_site"]["restv"][0],
-        )
-    else:
-        logger.info(f"Found adjusted conductance: {new_gmax}\nOff by:{error}")
-        for syn in synapse_list:
-            syn.destroy()
-        return new_gmax
+    gmax = original_gmax
+    for attempt in range(1, recursion_limit + 1):
+        percent_change = (desired_maxv - resting_potential) / (maxv - resting_potential)
+        gmax *= percent_change
+
+        synapse = innervate_points(seg)[0]
+        try:
+            data = indiv_syn_test(cell, [synapse], cell.somatic[0], gmax=gmax)
+        finally:
+            synapse.destroy()
+
+        maxv = data["rec_site"]["maxv"][0]
+        resting_potential = data["rec_site"]["restv"][0]
+        error = abs(desired_maxv - maxv)
+        if error <= tolerance:
+            logger.info("Found adjusted conductance: %s\nOff by: %s", gmax, error)
+            return gmax
+        logger.debug("Attempt %d: conductance (%s) off by %s", attempt, gmax, error)
+
+    logger.warning("Recursion limit reached. Ending with gmax: %s", gmax)
+    return gmax
 
 
 def indiv_syn_test(
-    cell: Cell, synapse_list: list[Exp2Syn], rec_section: Section, gmax: float = 0.01
+    cell: Cell, synapse_list: list[SynapseTerminal], rec_section: Section, gmax: float = 0.01
 ) -> dict[str, dict[str, list]]:
     """
     Activates each synapse individually in a given list and, for each synapse, records the
@@ -203,11 +176,13 @@ def indiv_syn_test(
     ----------
     cell: Cell
         Cell instance to pull stabilization_time variable to use.
-    synapse_list: list[Exp2Syn]
-        list of synapse NEURON point processes to activate.
+    synapse_list: list[SynapseTerminal]
+        list of SynapseTerminal objects to activate.
     rec_section: Section
         Section to record from for the non-synapse compartment measurements.
         Records from center of given section.
+    gmax: float, optional
+        Conductance to activate each synapse with. Default is 0.01.
 
     Returns
     -------
@@ -219,20 +194,20 @@ def indiv_syn_test(
         "rec_site": {"maxv": [], "maxt": [], "restv": []},
         "syn": {"maxv": [], "maxt": [], "restv": []},
     }
-    for i, syn in enumerate(synapse_list):
-        logger.debug("Activating synapse %d of %d", i + 1, syncount)
-        syn.netstim.start = cell.stabilization_time
+    for i, syn in enumerate(synapse_list, start=1):
+        logger.debug("Activating synapse %d of %d", i, syncount)
+        syn.set_firing_times([cell.stabilization_time])
         syn.netcon.weight[0] = gmax
-        syn_v = h.Vector()
-        rec_site_v = h.Vector()
-        t_syn = h.Vector()
-        t_rec_site = h.Vector()
+
+        rec_site_v, t_rec_site = h.Vector(), h.Vector()
+        syn_v, t_syn = h.Vector(), h.Vector()
         cell.cvode.record(
             rec_section(0.5)._ref_v, rec_site_v, t_rec_site, sec=rec_section
         )
         cell.cvode.record(
             syn.section(syn.segment.x)._ref_v, syn_v, t_syn, sec=syn.section
         )
+
         h.finitialize()
         h.dt = 1
         h.continuerun(cell.stabilization_time)
@@ -241,41 +216,38 @@ def indiv_syn_test(
         h.continuerun(cell.stabilization_time + 2)
         syn.netcon.weight[0] = 0
 
-        logger.debug("Simulation completed for synapse %d", i + 1)
-        max_data["rec_site"]["maxv"].append(rec_site_v.max())
-        max_data["rec_site"]["maxt"].append(t_rec_site.get(rec_site_v.max_ind()))
-        max_data["syn"]["maxv"].append(syn_v.max())
-        max_data["syn"]["maxt"].append(t_syn.get(syn_v.max_ind()))
-        max_data["rec_site"]["restv"].append(rec_site_v[0])
-        max_data["syn"]["restv"].append(syn_v[0])
+        for site, v_vec, t_vec in (
+            ("rec_site", rec_site_v, t_rec_site),
+            ("syn", syn_v, t_syn),
+        ):
+            max_ind = v_vec.max_ind()
+            max_data[site]["maxv"].append(v_vec.max())
+            max_data[site]["maxt"].append(t_vec.get(max_ind))
+            max_data[site]["restv"].append(v_vec[0])
+
         logger.debug(
-            "v and t at max for rec site: %d mV, %f ms",
-            rec_site_v.max(),
-            t_rec_site.get(rec_site_v.max_ind()),
+            "Synapse %d: rec site %.2f mV @ %.3f ms | synapse %.2f mV @ %.3f ms",
+            i,
+            max_data["rec_site"]["maxv"][-1],
+            max_data["rec_site"]["maxt"][-1],
+            max_data["syn"]["maxv"][-1],
+            max_data["syn"]["maxt"][-1],
         )
-        logger.debug(
-            "v and t at max for synapse: %d mV, %f ms",
-            syn_v.max(),
-            t_syn.get(syn_v.max_ind()),
-        )
-        syn = None
-    recordings = max_data
     logger.debug("Completed indiv_syn_test")
-    return recordings
+    return max_data
 
 
-# TODO look into changing locs from 0-1 to 0-section.L
 def syn_place(
     section: Section,
     tau1: float = 0.271,
     tau2: float = 0.271,
     e: float = 15,
-    syn_density: float = None,
-    locs: list[float] = None,
-) -> list[Exp2Syn]:
-    logger.debug("Placing synapses on section: %s", section.name())
-    """
-    Creates Exp2Syn point processes along a given section.
+    syn_density: float | None = None,
+    locs: list[float] | None = None,
+    **kwargs,
+) -> list[SynapseTerminal]:
+    r"""
+    Creates SynapseTerminals along a given section.
 
     Parameters
     ----------
@@ -288,47 +260,75 @@ def syn_place(
     e : float, optional
         Reversal potential of the synapse (mV). Default is 15.
     syn_density : float, optional
-        Density of synapses (synapses per µm). If provided, overrides `locs`.
-    locs : list, optional
-        Specific locations (0-1) along the section to place synapses.
+        Density of synapses (synapses per µm). If provided, overrides `locs` and evenly-spaced placement.
+    locs : list[float], optional
+        Specific locations (0-1) along the section to place synapses. Ignored if `syn_density` is provided.
+    \**kwargs:
+        Additional keyword arguments passed to the SynapseTerminal constructor (e.g. gmax, delay).
 
-   	Returns
+    Returns
     -------
-    synlist : list
-        List of created synapses.
+    synlist : list[SynapseTerminal]
+        List of created synapse terminals.
     """
+    logger.debug("Placing synapses on section: %s", section.name())
     sec_len = section.L  # Length of the section in µm
-    synlist = h.List()
 
-    # Determine synapse placement based on density or specific locations
-    if syn_density is None:
-        if locs is not None:
-            # Place synapses at specified locations
-            for loc in locs:
-                syn = h.Exp2Syn(section(loc))
-                syn.tau1 = tau1
-                syn.tau2 = tau2
-                syn.e = e
-                synlist.append(syn)
-            return synlist
-        else:
-            # Default to placing synapses at each segment
-            syncount = section.nseg
-            syninc = sec_len / syncount
-    else:
+    if syn_density is not None:
         # Calculate synapse placement based on density
-        dens = syn_density
-        syncount = int(sec_len * dens)
+        syncount = int(sec_len * syn_density)
         syninc = sec_len / syncount
-    # Create synapses along the section
-    for i in range(0, syncount):
-        syn = h.Exp2Syn(section(((syninc / 2) + (i * syninc)) / sec_len))
-        syn.tau1 = tau1
-        syn.tau2 = tau2
-        syn.e = e
-        synlist.append(syn)
+        locations = [(syninc / 2 + i * syninc) / sec_len for i in range(syncount)]
+    elif locs is not None:
+        # Place synapses at specified locations
+        locations = locs
+    else:
+        # Default to placing synapses at each segment
+        syncount = section.nseg
+        syninc = sec_len / syncount
+        locations = [(syninc / 2 + i * syninc) / sec_len for i in range(syncount)]
+
+    synlist = innervate_points(
+        *(section(loc) for loc in locations), tau1=tau1, tau2=tau2, e=e, **kwargs
+    )
     logger.debug("Created %d synapses", len(synlist))
     return synlist
+
+
+def _random_syn_groups(
+    cell: Cell,
+    section_list: list[Section],
+    numsyn: int,
+    synspace: float,
+    num_fiber: int,
+) -> list[list[SynapseTerminal]]:
+    """
+    Place `num_fiber` groups of `numsyn` synapses (spaced `synspace` apart) at random
+    locations along random terminal paths of `section_list`.
+    """
+    terminal_paths = [
+        get_parent_sections(end) for end in get_terminal_sections(section_list)
+    ]
+    path_lengths = [section_list_length(cell, path)[0] for path in terminal_paths]
+    if numsyn * synspace > min(path_lengths):
+        raise ValueError("Spread of synapses is longer than the shortest path length")
+
+    groups = []
+    for _ in range(num_fiber):
+        path_index = random.randrange(len(terminal_paths))
+        path, pathlength = terminal_paths[path_index], path_lengths[path_index]
+        # choose the location of the most distal synapse, leaving room for the full spread
+        randpoint = random.uniform(numsyn * synspace, pathlength)
+        synlocations = [randpoint - synspace * k for k in range(numsyn)]
+        groups.append(syn_path_place(cell, path, synlocations))
+    return groups
+
+
+def _standard_error(values: np.ndarray) -> float:
+    """Standard error of the mean (sample standard deviation, ddof=1) for a 1D array of trial values."""
+    if len(values) < 2:
+        return float("nan")
+    return np.std(values, ddof=1) / np.sqrt(len(values))
 
 
 def syn_test(
@@ -336,7 +336,7 @@ def syn_test(
     section_lists: list[list[Section]],
     numsyn: int,
     synspace: float,
-    axonspeed: float,
+    axonspeed: float | None,
     numtrial: int,
     num_fiber: int = 1,
     gmax: float = 0.037,
@@ -344,13 +344,11 @@ def syn_test(
     traces: bool = False,
     innervation_pattern: str = "random",
 ) -> dict:
-    logger.debug("Starting syn_test")
     """
     Simulates synaptic input on a list of section lists (e.g., for each branch), placing synapse groups
-    randomly or fully along them, and activates all synapses at once (not including axonal delay).
+    randomly or fully along them, and activates all synapses at once (including axonal delay if given).
 
-    Calculates the average time to peak and average halfwidth, along with error.
-
+    Calculates the average time to peak and average halfwidth, along with their standard errors.
 
     Parameters
     ----------
@@ -358,12 +356,12 @@ def syn_test(
         The cell model instance.
     section_lists : list
         List of sectionlists, usually used for polar sides of cell (lateral vs. medial).
-    num_synapses : int
+    numsyn : int
         Number of synapses within a synapse span. Ignored if innervation_pattern is 'total'.
     synspace : float
         Space between each synapse in a group. Ignored if innervation_pattern is 'total'.
     axonspeed : float, optional
-        Speed of axonal delay lines (in m/s).
+        Speed of axonal delay lines (in m/s). If None, no axonal delay is applied.
     numtrial : int
         Number of trials to be averaged. Each trial = new synaptic placement.
     num_fiber : int, optional
@@ -378,222 +376,147 @@ def syn_test(
         Pattern for innervation ('random' or 'total').
 
     Returns
-     -------
-     dict
+    -------
+    dict
         Dictionary containing the average time to peak, average halfwidth, and their standard errors.
         If traces is True, also includes the traces for the trials.
     """
+    logger.debug("Starting syn_test")
 
-    maxtimeArray = np.zeros(numtrial)
-    halfwidthArray = np.zeros(numtrial)
+    furthest_distance, furthest_segment = -1.0, None
+    for section_list in section_lists:
+        distance, segment = furthest_point(cell.somatic[0], section_list)
+        if distance > furthest_distance:
+            furthest_distance, furthest_segment = distance, segment
+
+    maxtimes = np.zeros(numtrial)
+    halfwidths = np.zeros(numtrial)
     trace_list = []
-    end_sections = []
-    python_end_sections = []
-    numpaths = []
-    furthestdistance, furthestsegment = furthest_point(
-        cell.somatic[0], section_lists[0]
-    )
-
-    for section_listnum in range(len(section_lists)):
-        end_sections.append(get_terminal_sections(section_lists[section_listnum]))
-        python_end_sections.append(list(end_sections[section_listnum]))
-        numpaths.append(len(python_end_sections[section_listnum]))
-        if (
-            furthest_point(cell.somatic[0], section_lists[section_listnum])[0]
-            > furthestdistance
-        ):
-            furthestdistance = furthest_point(
-                cell.somatic[0], section_lists[section_listnum]
-            )[0]
-            furthestsegment = furthest_point(
-                cell.somatic[0], section_lists[section_listnum]
-            )[1]
 
     for trialnum in range(numtrial):
         logger.debug("Running trial %d of %d", trialnum + 1, numtrial)
 
-        synlists = []
-        netconlists = []
-        netstimlists = []
-        syn_conductance_vectors = []
-        for section_listnum in range(len(section_lists)):
-            netconlist = []
-            netstimlist = []
-            if innervation_pattern == "random":
-                for end in end_sections[section_listnum]:
+        if innervation_pattern == "random":
+            synlists = [
+                group
+                for section_list in section_lists
+                for group in _random_syn_groups(
+                    cell, section_list, numsyn, synspace, num_fiber
+                )
+            ]
+        elif innervation_pattern == "total":
+            synlists = [innervate_total(section_list) for section_list in section_lists]
+        else:
+            raise ValueError(f"Unknown innervation_pattern: {innervation_pattern!r}")
 
-                    temppath = get_parent_sections(
-                        end
-                    )  # creating a path composed of each section from an end to the soma
-                    temppathlength = section_list_length(cell, temppath)[
-                        0
-                    ]  # getting the total length of the path
-                    if (
-                        numsyn * synspace > temppathlength
-                    ):  # checking if the synapse group can fit along this path
-                        raise Exception(
-                            "Spread of synapses is longer than the shortest path length"
-                        )
+        conductance_vectors = []
+        for syngroup in synlists:
+            for syn in syngroup:
+                conductance_vectors.append(h.Vector().record(syn.syn._ref_g))
+                syn.netcon.delay = 0
+                released = random.random() < release_probability
+                syn.gmax = (gmax / numsyn) if released else 0
 
-                    for j in range(num_fiber):
-                        randpath = random.randint(
-                            0, numpaths[section_listnum] - 1
-                        )  # chooses a random number to choose a path
-                        path = get_parent_sections(
-                            python_end_sections[section_listnum][randpath]
-                        )  # generates that section list of path from chosen end segment array element
-                        pathlength = section_list_length(cell, path)[
-                            0
-                        ]  # calculates total path length
-                        randpoint = (
-                            random.random() * pathlength
-                        )  # chooses a random value (0,1) and determines placement of most distal synapse of group
+                axon_delay = 0.0
+                if axonspeed is not None:
+                    # delay proportional to the synapse's distance from the furthest segment in the tree
+                    distance = distance3D(
+                        getsegxyz(furthest_segment), getsegxyz(syn.segment)
+                    )
+                    axon_delay = distance / (1000 * axonspeed)
+                syn.set_firing_times([cell.stabilization_time + axon_delay])
 
-                        # pick a new random value if the previous starting point cannot fit on the desired side
-                        while randpoint - (numsyn * synspace) < 0:
-                            randpoint = random.random() * pathlength
-
-                        # create storage lists
-                        synlocations = []
-
-                        for k in range(numsyn):  # create synapses and add to list
-                            synlocations.append(randpoint - (synspace * k))
-
-                            # generate group of synapses and add group list to a larger array of them all
-
-                            syngroup = syn_path_place(cell, path, synlocations)
-                            synlists.append(syngroup)
-                        count = 0
-            synlist = []
-            if innervation_pattern == "total":
-                for section_list in section_lists:
-                    synlist = innervate_total(section_list)
-                    synlists.append(synlist)
-            for syngroup in synlists:
-                for syn in syngroup:
-                    syn_conductance_vectors.append(h.Vector().record(syn._ref_g))
-                    netstim = h.NetStim()
-                    netcon = h.NetCon(netstim, syn)
-                    netcon.delay = 0
-                    chance = random.random()
-                    if chance >= release_probability:
-                        netcon.weight[0] = 0
-                    else:
-                        netcon.weight[0] = gmax / numsyn
-
-                    netstim.number = 1  # trigger once
-                    netstim.interval = 1  # not necessary
-                    if axonspeed is not None:
-                        # find the distance of syn's segment from the most distant segment and calculate axon delay using given speed
-                        distanceFromFurthestSegment = distance3D(
-                            getsegxyz(furthestsegment), getsegxyz(syn.get_segment())
-                        )
-                        axon_delay = distanceFromFurthestSegment / (1000 * axonspeed)
-                        netstim.start = cell.stabilization_time + axon_delay
-                    else:
-                        netstim.start = cell.stabilization_time
-                    netstimlist.append(netstim)
-                    netconlist.append(netcon)
-
-                netconlists.append(netconlist)
-                netstimlists.append(netstimlist)
         v = h.Vector().record(cell.somatic[0](0.5)._ref_v)
         t = h.Vector().record(h._ref_t)
-        g = syn_conductance_vectors[0]
+
         h.finitialize()
         h.dt = 1
         h.continuerun(cell.stabilization_time - 5)
         h.frecord_init()
         h.dt = 0.001
         h.continuerun(cell.stabilization_time + 10)
-        t = (
-            t - cell.stabilization_time
-        )  # set time relative to the start of synaptic activity
-        for syn_conductance_vector in syn_conductance_vectors[1:]:
-            g = g.add(syn_conductance_vector)
-        g = g.div(len(syn_conductance_vectors))
-        if traces == True:
+
+        t = t - cell.stabilization_time  # time relative to the start of synaptic activity
+        conductance = conductance_vectors[0]
+        for vec in conductance_vectors[1:]:
+            conductance = conductance.add(vec)
+        conductance = conductance.div(len(conductance_vectors))
+
+        if traces:
             trace_list.append(
                 {
                     "time": t.to_python(),
                     "voltage": v.to_python(),
-                    "conductance": g.to_python(),
+                    "conductance": conductance.to_python(),
                 }
             )
-        maxVind = v.max_ind()
-        maxtimeArray[trialnum] = t[maxVind]
-        halfV = (v.max() + v[0]) / 2
 
-        firsthalf = t[v.indwhere(">=", halfV)]
-        secondhalf = t[v.cl(maxVind).indwhere("<=", halfV) + maxVind]
-        halfwidth = secondhalf - firsthalf
-        halfwidthArray[trialnum] = halfwidth
-    maxtimeaverage = np.average(maxtimeArray)
-    halfwidthaverage = np.average(halfwidthArray)
+        max_ind = v.max_ind()
+        maxtimes[trialnum] = t[max_ind]
+        half_v = (v.max() + v[0]) / 2
+        first_half_t = t[v.indwhere(">=", half_v)]
+        second_half_t = t[v.cl(max_ind).indwhere("<=", half_v) + max_ind]
+        halfwidths[trialnum] = second_half_t - first_half_t
 
-    maxtimesumofsquares = 0
-    for maxtime in maxtimeArray:
-        square = (maxtime - maxtimeaverage) ** 2
-        maxtimesumofsquares += square
-
-    maxtimevariance = maxtimesumofsquares / (numtrial - 1)
-    maxtimestandarddev = math.sqrt(maxtimevariance)
-    maxtimestandarderror = maxtimestandarddev / math.sqrt(numtrial)
-
-    halfwidthsumofsquares = 0
-    for halfwidth in halfwidthArray:
-        square = (halfwidth - halfwidthaverage) ** 2
-        halfwidthsumofsquares += square
-
-    halfwidthvariance = halfwidthsumofsquares / (numtrial - 1)
-    halfwidthstandarddev = math.sqrt(halfwidthvariance)
-    halfwidthstandarderror = halfwidthstandarddev / math.sqrt(numtrial)
-    if traces == True:
-        return {
-            "maxtime": maxtimeaverage,
-            "maxtimestandarderror": maxtimestandarderror,
-            "halfwidth": halfwidthaverage,
-            "halfwidthstandarderror": halfwidthstandarderror,
-            "traces": trace_list,
-        }
-    else:
-        return {
-            "maxtime": maxtimeaverage,
-            "maxtimestandarderror": maxtimestandarderror,
-            "halfwidth": halfwidthaverage,
-            "halfwidthstandarderror": halfwidthstandarderror,
-        }
+    result = {
+        "maxtime": np.mean(maxtimes),
+        "maxtimestandarderror": _standard_error(maxtimes),
+        "halfwidth": np.mean(halfwidths),
+        "halfwidthstandarderror": _standard_error(halfwidths),
+    }
+    if traces:
+        result["traces"] = trace_list
+    logger.debug("Completed syn_test")
+    return result
 
 
 def get_attenuation_values(
-    cell,  # cell instance
-    sectionlist1,
-    sectionlist2,  # list of polar branches
-    exc_gmax=0.037,
-):
+    cell: Cell,
+    sectionlist1: list[Section],
+    sectionlist2: list[Section],
+    exc_gmax: float = 0.037,
+) -> list[dict[int, list[float]]]:
+    """
+    Measures voltage attenuation from each segment to the soma for two section lists
+    (e.g. polar branches), grouped by branch order (number of child sections).
+
+    Parameters
+    ----------
+    cell : Cell
+        The cell model instance.
+    sectionlist1 : list[Section]
+        First list of sections (e.g. lateral branches) to measure attenuation for.
+    sectionlist2 : list[Section]
+        Second list of sections (e.g. medial branches) to measure attenuation for.
+    exc_gmax : float, optional
+        Conductance of the synapse used to probe each segment. Default is 0.037.
+
+    Returns
+    -------
+    section_list_data : list[dict[int, list[float]]]
+        For each section list, a dictionary mapping branch order (number of child sections) to a
+        list of segment/soma peak-voltage ratios for every segment at that branch order.
+    """
     logger.info("Calculating attenuation values for cell: %s", cell.cell_name)
-    """Get attenuation values for a cell"""
-    section_lists = [sectionlist1, sectionlist2]
     section_list_data = [dict(), dict()]
-    for list_index, section_list in enumerate(section_lists):
+    for list_index, section_list in enumerate((sectionlist1, sectionlist2)):
         for sec in section_list:
             for seg in sec:
-                syn = h.Exp2Syn(seg)
-                syn.tau1 = 0.29
-                syn.tau2 = 0.29
-                syn_con = h.NetCon(None, syn, weight=exc_gmax)
-                syn_con.delay = 0
-                syn.event(1000)
-                t = h.Vector.record(h._ref_t)
-                v_soma = h.Vector.record(cell.somatic[0](0.5)._ref_v)
-                v_syn = h.Vector.record(seg._ref_v)
+                syn = innervate_points(seg, tau1=0.29, tau2=0.29)[0]
+                syn.gmax = exc_gmax
+                syn.set_firing_times([100])
+
+                v_soma = h.Vector().record(cell.somatic[0](0.5)._ref_v)
+                v_syn = h.Vector().record(seg._ref_v)
                 h.finitialize()
-                h.continuerun(10010)
+                h.continuerun(110)
+
                 v_proportion = v_syn.max() / v_soma.max()
-                try:
-                    section_list_data[list_index][sec.nchild].append(v_proportion)
-                except:
-                    section_list_data[list_index][sec.nchild] = [v_proportion]
+                num_children = len(sec.children())
+                section_list_data[list_index].setdefault(num_children, []).append(
+                    v_proportion
+                )
+                syn.destroy()
 
     logger.info("Completed attenuation values calculation")
     return section_list_data
