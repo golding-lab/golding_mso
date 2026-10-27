@@ -2,13 +2,12 @@
 This module provides utility functions for the package, such as file path helpers.
 """
 
-import json
 import logging
 import os
 import pathlib
 import subprocess
 
-from importlib.resources import path, files
+from importlib.resources import as_file, path, files
 from neuron import h
 from shutil import copy, rmtree
 
@@ -61,13 +60,13 @@ def get_cell_file_paths(*filenames: str) -> list[str]:
     return cell_files
 
 
-def get_cell_dir_path() -> str:
+def get_cell_dir_path() -> pathlib.Path:
     """
     Get the path to the cell morphology files directory.
 
     Returns
     -------
-    str:
+    pathlib.Path:
         The path to the 'cells' directory within the golding_mso package.
     """
     return get_package_path() / "cells"
@@ -80,19 +79,20 @@ def get_package_path() -> pathlib.Path:
 
     Returns
     -------
-    str:
+    pathlib.Path:
         The path to the golding_mso package directory.
     """
-    return files("golding_mso")
+    with as_file(files("golding_mso")) as package_path:
+        return package_path
 
 
-def load_dll(dll_path: str = ""):
+def load_dll(dll_path: str|pathlib.Path = ""):
     """
     Load a compiled NEURON mechanism DLL.
 
     Parameters
     ----------
-    dll_path : str
+    dll_path : str|pathlib.Path
         Path to the compiled NEURON mechanism DLL.
     """
     if os.path.isfile(dll_path):
@@ -124,7 +124,7 @@ def load_pkg_dll():
 
 
 def compile_mechs(
-    mech_path: str = None, workdir: str = None, nrnivmodl_path: str = None
+    mech_path: str|None = None, workdir: str|None = None, nrnivmodl_path: str|None  = None
 ):
     """
     Compile NEURON mechanisms in the specified directory using nrnivmodl.
@@ -157,7 +157,7 @@ def compile_mechs(
         rmtree(cwd / "x86_64_old")
     try:
         logger.debug(
-            f"Running nrnivmodl with command: {f'{nrnivmodl_path} {str(pathlib.Path(mech_path))}'}"
+            f"Running nrnivmodl with command: {f'{nrnivmodl_path} {str(pathlib.Path(mech_path if mech_path is not None else mechd))}'}"
         )
         logger.debug(
             subprocess.run(
@@ -245,3 +245,14 @@ def add_morphology(morph_file_path: str):
     dest_path = cell_dir / pathlib.Path(morph_file_path).name
     copy(morph_file_path, dest_path)
     logger.info(f"Morphology file {morph_file_path} copied to package @ {dest_path}")
+
+def load_spike_times(freq, anf_num):
+    if not (get_package_path() / "anf_spikes").exists():
+        raise FileNotFoundError("ANF spike time data directory not found in package.")
+    import numpy as np
+    import pickle
+    raw = pickle.load(open(f'{get_package_path() / "anf_spikes" / f"spikes_{freq}hz.pkl"}', 'rb'))
+    return [
+            np.array([s for s in fiber]) * 1000
+            for fiber in raw[freq]
+        ][:anf_num + 1]

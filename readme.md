@@ -6,7 +6,7 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 <br>
 
-<a href="https://golding-mso.readthedocs.io/en/latest/"> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue"> </a>
+<a href="https://golding-mso.readthedocs.io/en/revision-version/"> <img alt="Static Badge" src="https://img.shields.io/badge/Read%20the%20Docs-blue?style=for-the-badge&logo=readthedocs&logoColor=white&labelColor=blue"> </a>
 
 
 
@@ -30,7 +30,7 @@ Tools and files from the <a href="https://goldinglab.org">Golding Lab</a> at UT 
 
 *Only tested on macOS and Windows Subsystem for Linux*
 
-- Ensure Python 3.8+ is installed.
+- Ensure Python 3.12+ is installed.
 
 ### Installation
 
@@ -42,11 +42,11 @@ pip install .
 ```
 
 ## Resources
-- [Documentation](https://golding_mso.readthedocs.io/en/latest/)
+- [Documentation](https://golding_mso.readthedocs.io/en/revision-version/)
 - [Golding Lab Website](https://goldinglab.org)
 - [NEURON Documentation](https://www.neuron.yale.edu/neuron/)
 - [GitHub Repository](https://github.com/golding-lab/golding_mso)
-- [Morphology files](https://github.com/golding-lab/golding_mso/blob/main/golding_mso/cells)
+- [Morphology files](https://github.com/golding-lab/golding_mso/blob/initial-version/golding_mso/cells)
 
 <br>
 
@@ -291,10 +291,17 @@ mso_cell = gmso.Cell(gmso.morphologies['151124_03'])
 mso_cell.assign_channels()
 mso_cell.attach_axon()
 
-itd_results = itd_test_sweep(mso_cell, mso_cell.lateral_nofilopodia, mso_cell.medial_nofilopodia, 'total', itd_vals=np.arange(-0.5,0.51,0.01), record_axon=True, exc_fiber_gmax = 0.03)  # Test ITDs of -0.25 to 0.25 ms
+itd_test = gmso.ITDTest(
+    cell=mso_cell,
+    offset_sections=mso_cell.lateral_nofilopodia,
+    stable_sections=mso_cell.medial_nofilopodia,
+    exc_gmax=0.03,
+    record_axon=True
+)
+itd_results = itd_test.run_sweep()
 spikes = itd_results['spike_counts']
 for trial in range(19):
-    spikes += itd_test_sweep(mso_cell, mso_cell.lateral_nofilopodia, mso_cell.medial_nofilopodia, 'total', itd_vals=np.arange(-0.5,0.51,0.01), record_axon=True, exc_fiber_gmax = 0.03)['spike_counts']  # Test ITDs of -0.25 to 0.25 ms
+    spikes += itd_test.run_sweep()['spike_counts']  # Test ITDs of -0.25 to 0.25 ms
 
 plt.plot(itd_results['itd_vals'], spikes/21)
 plt.xlabel('ITD (ms)')

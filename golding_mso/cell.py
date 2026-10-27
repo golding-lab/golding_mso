@@ -694,11 +694,12 @@ class Cell:
 
         ================    ======
         Neurolucida         Python
-        ================    =======
+        ================    ======
         Soma                somatic
         Apical dendrites    lateral
         Dendrites           medial
-
+        ================    =======
+        
         Parameters
         ----------
         filopodia_maximum_length : float
